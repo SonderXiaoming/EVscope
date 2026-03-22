@@ -1,4 +1,4 @@
-# EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Total RNA Sequencing Analysis of Extracellular Vesicle
+# EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Total RNA Sequencing Analysis of Extracellular Vesicles
 
 **EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV) RNA sequencing data. Tailored to address the challenges of EV RNA-seq—low RNA yield, fragmented transcripts, diverse RNA biotypes, and contamination—EVscope processes paired-end or single-end FASTQ files through a robust, end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression quantification, contamination screening, tissue deconvolution, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces a novel expectation-maximization (EM) algorithm for multi-mapping read assignment and a unique read-through detection method for Read1 trimming.
 
@@ -6,7 +6,6 @@
   <img src="./figures/EVscope_pipeline.png" alt="EVscope Pipeline Overview" width="600"/>
 </p>
 
-> **Note**: If the pipeline overview image does not display, ensure `figures/EVscope_pipeline.png` is uploaded to your GitHub repository. Alternatively, use an absolute URL (e.g., from GitHub releases).
 
 ## Table of Contents
 
@@ -145,7 +144,7 @@ EVscope/
    ```
 
 5. **Download Reference Files**:
-   Reference files are available at [EVscope GitHub Releases](https://github.com/TheDongLab/EVscope/releases).
+   Reference annotation files (HG38, GENCODE v45) are available on [Zenodo](https://doi.org/10.5281/zenodo.15577788). Download `EVscope_annotations_HG38.zip` and extract to `references/annotations_HG38/`.
 
 6. **Test Installation**:
    ```bash
@@ -228,6 +227,40 @@ bash EVscope.sh --sample_name Example_Data \
 | 26 | Coverage density plots for RNA types and meta-gene regions |
 | 27 | Final interactive HTML report generation |
 
+## Output Structure
+
+Each sample generates an output directory with the following structure:
+
+```
+<sample_name>_EVscope_output/
+├── Step_01_Raw_QC/                    # FastQC reports for raw reads
+├── Step_02_UMI_Analysis/              # UMI motif analysis and ACC fraction
+├── Step_03_Trimming/                  # Trimmed FASTQ files
+├── Step_04_Trimmed_QC/                # FastQC reports for trimmed reads
+├── Step_05_Contamination_Filter/      # BBSplit contamination screening
+├── Step_06_Alignment_Refined/         # STAR alignment and UMI-deduplicated BAM
+├── Step_07_Strand_Detection/          # Strandedness and splice/kb metrics
+├── Step_08_CIRCexplorer2/             # CIRCexplorer2 circRNA results
+├── Step_09_CIRI2/                     # CIRI2 circRNA results
+├── Step_10_circRNA_Merged/            # Merged circRNA results (CPM-normalized)
+├── Step_11_RNA_Metrics/               # Picard RNA-seq metrics
+├── Step_12_featureCounts_Quant/       # featureCounts gene quantification
+├── Step_13_gDNA_Corrected/            # gDNA-corrected quantification
+├── Step_14_RSEM_Quant/                # RSEM quantification
+├── Step_15_featureCounts_Expression/  # Expression matrices (TPM/CPM)
+├── Step_16_gDNA_Expression/           # gDNA-corrected expression matrices
+├── Step_17_RSEM_Expression/           # RSEM expression matrices
+├── Step_18_Genomic_Regions/           # Meta-gene region mapping stats
+├── Step_19_Taxonomy/                  # Kraken2 taxonomic classification
+├── Step_20-22_Deconvolution/          # Tissue deconvolution results
+├── Step_23_rRNA_Detection/            # ribodetector rRNA detection
+├── Step_24_MultiQC_Summary/           # QC summary matrix
+├── Step_25_EMapper_BigWig_Quantification/ # EMapper coverage and bigWig
+├── Step_26_BigWig_Density_Plot/       # RNA type and meta-gene density plots
+├── Step_27_HTML_Report/               # Interactive HTML report
+└── EVscope_pipeline.log               # Pipeline execution log
+```
+
 ## Troubleshooting
 
 - **Dependency Not Found**: Verify Conda environments with `conda list -n evscope_env`.
@@ -290,7 +323,7 @@ Raw sequencing data: NCBI SRA (accession: SRR31350808–SRR31350811).
 
 ## License
 
-EVscope is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+EVscope is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
