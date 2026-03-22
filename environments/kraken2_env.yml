@@ -1,0 +1,9 @@
+name: kraken2_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - kraken2=2.1.3
+  - krakentools=1.2
+  - krona=2.8.1
