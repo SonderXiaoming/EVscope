@@ -259,7 +259,7 @@ Please report bugs via [GitHub Issues](https://github.com/YiyongZhao/EVscope/iss
 
 If you use EVscope in your research, please cite:
 
-> Zhao, Y., Chintalapudi, H., Xu, Z., Liu, W., Hu, Y., Grassin, E., Lee, L. P., & Dong, X. (2026). EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Analysis of Total RNA Sequencing from Extracellular Vesicles. *Bioinformatics* (submitted). Zenodo: https://zenodo.org/records/15577789
+> Zhao, Yiyong, et al. "EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Analysis of Total RNA Sequencing from Extracellular Vesicles." bioRxiv (2025). Zenodo: https://zenodo.org/records/15577789
 
 ## Credits
 
