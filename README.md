@@ -120,7 +120,7 @@ EVscope/
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/YiyongZhao/EVscope.git
+   git clone https://github.com/TheDongLab/EVscope.git
    cd EVscope
    ```
 
@@ -145,7 +145,7 @@ EVscope/
    ```
 
 5. **Download Reference Files**:
-   Reference files are available at [EVscope GitHub Releases](https://github.com/YiyongZhao/EVscope/releases).
+   Reference files are available at [EVscope GitHub Releases](https://github.com/TheDongLab/EVscope/releases).
 
 6. **Test Installation**:
    ```bash
@@ -249,17 +249,17 @@ A: Open `Step_27_HTML_Report/<sample_name>_final_report.html` in a web browser.
 ## Contributing
 
 We welcome contributions! To contribute:
-1. Fork the repository: [https://github.com/YiyongZhao/EVscope](https://github.com/YiyongZhao/EVscope).
+1. Fork the repository: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope).
 2. Create a feature branch: `git checkout -b feature/YourFeature`.
 3. Submit a pull request.
 
-Please report bugs via [GitHub Issues](https://github.com/YiyongZhao/EVscope/issues).
+Please report bugs via [GitHub Issues](https://github.com/TheDongLab/EVscope/issues).
 
 ## Citation
 
 If you use EVscope in your research, please cite:
 
-> Zhao, Yiyong, et al. "EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Analysis of Total RNA Sequencing from Extracellular Vesicles." bioRxiv (2025). Zenodo: https://zenodo.org/records/15577789
+> Zhao, Yiyong, et al. "EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Analysis of Total RNA Sequencing from Extracellular Vesicles." bioRxiv (2025). Zenodo: https://doi.org/10.5281/zenodo.15577788
 
 ## Credits
 
@@ -283,7 +283,7 @@ If you use EVscope in your research, please cite:
 - Aligning Science Across Parkinson's: ASAP-000301, ASAP-000529 (via Michael J. Fox Foundation)
 
 **Data Availability**:
-Source code: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope) and Zenodo (https://zenodo.org/records/15577789) under MIT license.
+Source code: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope) and Zenodo (https://doi.org/10.5281/zenodo.15577788) under MIT license.
 Raw sequencing data: NCBI SRA (accession: SRR31350808–SRR31350811).
 
 **Corresponding Author**: Xianjun Dong ([xianjun.dong@yale.edu](mailto:xianjun.dong@yale.edu))

@@ -19,7 +19,7 @@
 #   - See check_dependencies() for complete tool list
 # Author: Yiyong Zhao, Xianjun Dong
 # License: Creative Commons Attribution 4.0 International (CC BY 4.0)
-# Repository: https://github.com/YiyongZhao/EVscope
+# Repository: https://github.com/TheDongLab/EVscope
 # Changelog:
 #   v1.0.0 - Initial release with 27-step modular workflow
 # ==============================================================================
