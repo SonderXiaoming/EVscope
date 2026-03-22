@@ -38,9 +38,7 @@ Key features:
 
 import argparse
 import csv
-import io
 import logging
-import math
 import os
 import re
 import sys

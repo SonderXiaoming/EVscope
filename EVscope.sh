@@ -1039,45 +1039,34 @@ _step_18_impl() {
     local step_dir="${output_dir}/Step_18_Genomic_Regions"
     local final_bam="${output_dir}/Step_06_Alignment_Refined/${sample_name}_STAR_umi_dedup_Aligned.sortedByCoord.out.bam"
     assert_file_exists "$final_bam" "Aligned BAM from Step 6"
-    declare -A region_files=()
-    local -a pids=()
-    local saf_path saf_basename current_s_opt
-    for saf_path in "${STEP18_SAF_LIST[@]:-}"; do
-        if [[ ! -f "$saf_path" ]]; then
-            log 3 "WARN" "SAF file not found, skipping: ${saf_path}"
-            continue
-        fi
-        saf_basename="$(basename "$saf_path" .saf)"
-        local output_file="${step_dir}/${sample_name}_${saf_basename}_featureCounts.tsv"
-        region_files["$saf_basename"]="$output_file"
-        current_s_opt="$featurecounts_strand"
-        if [[ "$saf_basename" == *"intergenic"* || "$saf_basename" == *"blacklist"* || \
-              "$saf_basename" == *"INTERGENIC"* || "$saf_basename" == *"BLACKLIST"* ]]; then
-            current_s_opt=0
-        fi
-        (
-            if [[ "$is_paired_end" == "true" ]]; then
-                featureCounts -F SAF -a "$saf_path" -o "$output_file" \
-                    -p --countReadPairs -T 2 -s "$current_s_opt" -B -C "$final_bam"
-            else
-                featureCounts -F SAF -a "$saf_path" -o "$output_file" \
-                    -T 2 -s "$current_s_opt" -B -C "$final_bam"
-            fi
-        ) &
-        pids+=($!)
-# Calc max concurrent jobs (featureCounts uses 2 threads per job)
-        local max_jobs=$(( thread_count / 2 ))
-        [[ "$max_jobs" -lt 1 ]] && max_jobs=1
 
-        if (( ${#pids[@]} >= max_jobs )); then
-            wait "${pids[0]}"
-            pids=("${pids[@]:1}")
-        fi
+    # Use pre-built merged SAF (7 regions, 801K features, mutually exclusive)
+    local merged_saf="${STEP18_MERGED_SAF}"
+    assert_file_exists "$merged_saf" "Merged meta-gene SAF from EVscope.conf"
+    local merged_output="${step_dir}/${sample_name}_metagene_featureCounts.tsv"
+
+    # featureCounts defaults: unique-mapping only (no -M), unstranded (-s 0)
+    # PE: -p --countReadPairs (count fragments), -B (both ends mapped), -C (no chimera)
+    log 1 "INFO" "Running featureCounts with merged meta-gene SAF (unique-mapping, unstranded)"
+    if [[ "$is_paired_end" == "true" ]]; then
+        featureCounts -F SAF -a "$merged_saf" -o "$merged_output" \
+            -p --countReadPairs -B -C -T "$thread_count" -s 0 "$final_bam"
+    else
+        featureCounts -F SAF -a "$merged_saf" -o "$merged_output" \
+            -T "$thread_count" -s 0 "$final_bam"
+    fi
+
+    # Split merged output into per-region files (for Step 24 and pie chart)
+    declare -A region_files=()
+    IFS=',' read -ra region_labels <<< "${STEP18_REGION_LABELS}"
+    for region in "${region_labels[@]}"; do
+        local region_output="${step_dir}/${sample_name}_HG38_${region}_noOverlap_featureCounts.tsv"
+        head -2 "$merged_output" > "$region_output"
+        grep "^${region}__" "$merged_output" >> "$region_output" || true
+        region_files["$region"]="$region_output"
     done
-    local pid
-    for pid in "${pids[@]:-}"; do
-        wait "$pid" || log 3 "WARN" "A parallel featureCounts job failed"
-    done
+
+    # Plot pie chart
     local -a plot_args=("--sampleName" "${sample_name}" "--output_dir" "$step_dir")
     local -A region_patterns=(
         ["5UTR"]="--input_5UTR_readcounts"
@@ -1087,20 +1076,12 @@ _step_18_impl() {
         ["promoter"]="--input_promoters_readcounts"
         ["downstream"]="--input_downstream_2Kb_readcounts"
         ["intergenic"]="--input_intergenic_readcounts"
-        ["blacklist"]="--input_ENCODE_blacklist_readcounts"
     )
-    local pattern flag matched_file saf_bn
+    local pattern flag
     for pattern in "${!region_patterns[@]}"; do
         flag="${region_patterns[$pattern]}"
-        matched_file=""
-        for saf_bn in "${!region_files[@]}"; do
-            if [[ "$saf_bn" == *"$pattern"* ]]; then
-                matched_file="${region_files[$saf_bn]}"
-                break
-            fi
-        done
-        if [[ -n "$matched_file" && -f "$matched_file" ]]; then
-            plot_args+=("$flag" "$matched_file")
+        if [[ -n "${region_files[$pattern]+x}" && -f "${region_files[$pattern]}" ]]; then
+            plot_args+=("$flag" "${region_files[$pattern]}")
         fi
     done
     if (( ${#plot_args[@]} > 4 )); then
@@ -1310,12 +1291,11 @@ _step_24_impl() {
     [[ -f "$kraken_report" ]] && qc_args+=("--kraken_report" "$kraken_report")
 
     local step18_dir="${output_dir}/Step_18_Genomic_Regions"
-    local fc_3utr fc_5utr fc_downstream fc_exon fc_blacklist fc_intergenic fc_intron fc_promoter
+    local fc_3utr fc_5utr fc_downstream fc_exon fc_intergenic fc_intron fc_promoter
     fc_3utr=$(find "$step18_dir" -name "*3UTR*featureCounts.tsv" 2>/dev/null | head -1)
     fc_5utr=$(find "$step18_dir" -name "*5UTR*featureCounts.tsv" 2>/dev/null | head -1)
     fc_downstream=$(find "$step18_dir" -name "*downstream*featureCounts.tsv" 2>/dev/null | head -1)
     fc_exon=$(find "$step18_dir" -name "*exon*featureCounts.tsv" 2>/dev/null | head -1)
-    fc_blacklist=$(find "$step18_dir" -name "*blacklist*featureCounts.tsv" 2>/dev/null | head -1)
     fc_intergenic=$(find "$step18_dir" -name "*intergenic*featureCounts.tsv" 2>/dev/null | head -1)
     fc_intron=$(find "$step18_dir" -name "*intron*featureCounts.tsv" 2>/dev/null | head -1)
     fc_promoter=$(find "$step18_dir" -name "*promoter*featureCounts.tsv" 2>/dev/null | head -1)
@@ -1323,7 +1303,6 @@ _step_24_impl() {
     [[ -f "$fc_5utr" ]] && qc_args+=("--featureCounts_5UTR" "$fc_5utr")
     [[ -f "$fc_downstream" ]] && qc_args+=("--featureCounts_downstream_2kb" "$fc_downstream")
     [[ -f "$fc_exon" ]] && qc_args+=("--featureCounts_exon" "$fc_exon")
-    [[ -f "$fc_blacklist" ]] && qc_args+=("--featureCounts_ENCODE_blacklist" "$fc_blacklist")
     [[ -f "$fc_intergenic" ]] && qc_args+=("--featureCounts_intergenic" "$fc_intergenic")
     [[ -f "$fc_intron" ]] && qc_args+=("--featureCounts_intron" "$fc_intron")
     [[ -f "$fc_promoter" ]] && qc_args+=("--featureCounts_promoter_1500_500bp" "$fc_promoter")
@@ -1422,11 +1401,11 @@ _step_26_impl() {
     bash "${EVscope_PATH}/bin/Step_26_density_plot_over_RNA_types.sh" \
         --input_bw_file "$bigwig" --input_bed_files "$bed_rna" \
         --input_bed_labels "$bed_labels_rna" --output_dir "${step_dir}/RNA_types" \
-        --random_tested_row_num_per_bed 100000
+        --threads "$thread_count" --random_tested_row_num_per_bed 100000
     bash "${EVscope_PATH}/bin/Step_26_density_plot_over_meta_gene.sh" \
         --input_bw_file "$bigwig" --input_bed_files "$bed_meta" \
         --input_bed_labels "$bed_labels_meta" --output_dir "${step_dir}/meta_gene" \
-        --blackListFileName "${ENCODE_BLACKLIST_BED:-}" --random_tested_row_num_per_bed 100000
+        --blackListFileName "${ENCODE_BLACKLIST_BED:-}" --threads "$thread_count" --random_tested_row_num_per_bed 100000
 }
 run_step_26() {
     local step_dir="${output_dir}/Step_26_BigWig_Density_Plot"

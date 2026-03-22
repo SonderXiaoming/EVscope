@@ -12,7 +12,6 @@ Optimized version with improved layout:
 
 import argparse
 import csv
-import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np

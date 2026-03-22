@@ -17,6 +17,7 @@ while [[ "$#" -gt 0 ]]; do
         --input_bed_labels) input_bed_labels="$2"; shift ;;
         --output_dir) output_dir="$2"; shift ;;
         --random_tested_row_num_per_bed) random_tested_row_num_per_bed="$2"; shift ;;
+        --threads) num_threads="$2"; shift ;;
         --blackListFileName) blackListFileName="$2"; shift ;;
         *) echo "Unknown parameter: $1"; usage ;;
     esac
@@ -130,7 +131,7 @@ if [ ! -f "$matrix_file" ]; then
         --afterRegionStartLength 0 \
         -o "$matrix_file" \
         --binSize 5 \
-        -p 20 \
+        -p ${num_threads:-4} \
         --missingDataAsZero \
         ${blackListFileName:+--blackListFileName "$blackListFileName"} \
         --outFileSortedRegions "$sorted_regions_file"

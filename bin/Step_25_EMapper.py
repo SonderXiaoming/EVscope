@@ -26,13 +26,12 @@ import time
 import logging
 import re
 import subprocess
-import pickle
 import gc
 import atexit
 import numpy as np
 import argparse
 from collections import defaultdict
-from typing import List, Tuple, Dict, Any, Generator, Set, Optional, Union
+from typing import List, Tuple, Dict, Any, Generator, Set, Optional
 import multiprocessing as mp
 import logging.handlers
 from functools import partial

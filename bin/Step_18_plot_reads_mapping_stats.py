@@ -2,7 +2,7 @@
 """
 Compute total read counts from featureCounts TSV files and plot a pie chart.
 Also generates a summary TSV table of read counts per feature.
-Legend order: 5'UTR, Exon, 3'UTR, Intron, Promoter, Downstream 2Kb, Intergenic, ENCODE_blacklist.
+Legend order: 5'UTR, Exon, 3'UTR, Intron, Promoter, Downstream 2Kb, Intergenic.
 """
 import os
 import sys
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--input_promoters_readcounts', required=True, help='TSV for promoter counts')
     parser.add_argument('--input_downstream_2Kb_readcounts', required=True, help='TSV for downstream counts')
     parser.add_argument('--input_intergenic_readcounts', required=True, help='TSV for intergenic counts')
-    parser.add_argument('--input_ENCODE_blacklist_readcounts', required=True, help='TSV for ENCODE blacklist counts')
+    parser.add_argument('--input_ENCODE_blacklist_readcounts', required=False, default=None, help='(Deprecated) TSV for ENCODE blacklist counts')
     parser.add_argument('--sampleName', required=True, help='Sample name for the plot title')
     parser.add_argument('--output_dir', required=True, help='Directory to save output files')
     args = parser.parse_args()
@@ -61,11 +61,10 @@ if __name__ == '__main__':
         sum_read_counts(args.input_promoters_readcounts),
         sum_read_counts(args.input_downstream_2Kb_readcounts),
         sum_read_counts(args.input_intergenic_readcounts),
-        sum_read_counts(args.input_ENCODE_blacklist_readcounts)
     ]
 
     labels = ["5'UTR", 'Exon', "3'UTR", 'Intron', 'Promoter',
-              'Downstream 2kb', 'Intergenic', 'ENCODE Blacklist']
+              'Downstream 2kb', 'Intergenic']
 
     total = sum(counts)
     if total == 0:
@@ -94,7 +93,7 @@ if __name__ == '__main__':
     
     # Prepare data for the pie chart
     sizes = [c / total for c in counts]
-    colors = ['red', 'orange', 'cyan', 'green', 'purple', 'blue', 'pink', 'gray']
+    colors = ['red', 'orange', 'cyan', 'green', 'purple', 'blue', 'pink']
 
     # Create the plot
     fig, ax = plt.subplots(figsize=(7, 3.5), dpi=300)

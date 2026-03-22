@@ -15,6 +15,7 @@ while [[ "$#" -gt 0 ]]; do
         --input_bed_labels) input_bed_labels="$2"; shift ;;
         --output_dir) output_dir="$2"; shift ;;
         --random_tested_row_num_per_bed) random_tested_row_num_per_bed="$2"; shift ;;
+        --threads) num_threads="$2"; shift ;;
         *) echo "Unknown parameter: $1"; usage ;;
     esac
     shift
@@ -128,7 +129,7 @@ if [ ! -f "$matrix_file" ]; then
         -o "$matrix_file" \
         --binSize 5 \
 		--missingDataAsZero \
-        -p 80 \
+        -p ${num_threads:-4} \
         --outFileSortedRegions "$sorted_regions_file"
 else
     echo "computeMatrix output exists, skipping computeMatrix..."

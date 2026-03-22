@@ -17,7 +17,6 @@ from R1 reads by extracting the UMI from the R2 header. It generates a TSV log, 
 summarizing the trimming statistics, and a summary file with key metrics.
 """
 
-import sys
 import os
 import gzip
 import argparse

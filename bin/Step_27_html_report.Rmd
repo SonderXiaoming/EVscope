@@ -71,7 +71,7 @@ body {
 
 .main-container {
   max-width: 1400px !important;
-  margin-left: calc(var(--toc-width) + 50px) !important; /* 自动计算间距 */
+  margin-left: calc(var(--toc-width) + 50px) !important; /* Auto-calculate left margin */
   margin-right: auto !important;
 }
 
@@ -832,7 +832,7 @@ if (check_step_dir("Step_07_Strand_Detection")) {
 
   # --- Splice/kb: DNA contamination metric ---
   tsv_files <- list.files(
-    file.path(sample_dir, "Step_07_Strand_Detection"),
+    file.path(absolute_output_dir, "Step_07_Strand_Detection"),
     pattern = "bam2strandness\\.tsv$", full.names = TRUE
   )
   if (length(tsv_files) > 0) {

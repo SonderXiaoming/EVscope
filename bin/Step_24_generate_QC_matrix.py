@@ -291,8 +291,7 @@ def main():
         "Exonic": safe_call(process_featureCounts_file, args.featureCounts_exon, default=0),
         "Intergenic": safe_call(process_featureCounts_file, args.featureCounts_intergenic, default=0),
         "Intronic": safe_call(process_featureCounts_file, args.featureCounts_intron, default=0),
-        "Promoter": safe_call(process_featureCounts_file, args.featureCounts_promoter_1500_500bp, default=0),
-        "Blacklist": safe_call(process_featureCounts_file, args.featureCounts_ENCODE_blacklist, default=0)
+        "Promoter": safe_call(process_featureCounts_file, args.featureCounts_promoter_1500_500bp, default=0)
     }
     total_fc_meta = sum(fc_counts.values())
     for region, count in fc_counts.items():
