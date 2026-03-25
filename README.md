@@ -311,10 +311,6 @@ If you use EVscope in your research, please cite:
 3. Aligning Science Across Parkinson's (ASAP) Collaborative Research Network, Chevy Chase, MD 20815, USA
 4. Department of Medicine, Brigham and Women's Hospital, Harvard Medical School, Harvard University, Boston, MA, USA
 
-**Funding**:
-- NIH Grants: 1R01NS124916, 1R24NS132738
-- Aligning Science Across Parkinson's: ASAP-000301, ASAP-000529 (via Michael J. Fox Foundation)
-
 **Data Availability**:
 Source code: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope) and Zenodo (https://doi.org/10.5281/zenodo.15577788) under MIT license.
 Raw sequencing data: NCBI SRA (accession: SRR31350808–SRR31350811).
