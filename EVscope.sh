@@ -1067,7 +1067,7 @@ _step_18_impl() {
     done
 
     # Plot pie chart
-    local -a plot_args=("--sampleName" "${sample_name}" "--output_dir" "$step_dir")
+    local -a plot_args=("--sampleName" "${sample_name}" "--output_dir" "$step_dir" "--saf_file" "${STEP18_MERGED_SAF}")
     local -A region_patterns=(
         ["5UTR"]="--input_5UTR_readcounts"
         ["exon"]="--input_exon_readcounts"
