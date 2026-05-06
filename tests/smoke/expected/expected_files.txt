@@ -1,3 +1,7 @@
 work/acc.tsv
-work/read_length.png
 work/read_length.pdf
+work/read_length.png
+work/emapper/out/tiny_readcounts.txt
+work/emapper/out/tiny_unstranded.bw
+work/emapper/out/tiny_unstranded_uniq_only.bw
+work/emapper/tiny_bigwig_expression.tsv

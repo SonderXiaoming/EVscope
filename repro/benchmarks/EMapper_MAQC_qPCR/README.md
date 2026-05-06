@@ -1,11 +1,17 @@
-# EMapper MAQC qPCR benchmark
+# EMapper MAQC/qPCR benchmark notes
 
-Large benchmark inputs/outputs are maintained outside Git. For release, copy finalized scripts from `example_data/MAQC_EMapper_benchmark/` or archive them on Zenodo, then update `repro/manifest.tsv` with checksums.
+This directory documents the benchmark comparison used in the manuscript text and supplementary figure legends. Large input matrices and generated benchmark outputs are not committed to this lightweight source repository; they should be archived with the final public release bundle when redistribution is permitted.
 
-Expected minimum files when finalized:
+Current release-candidate scope:
 
-- `run_benchmark.sh`
-- `inputs.tsv`
-- `expected_metrics.tsv`
-- `results_summary.tsv`
-- PDF/SVG figures or commands to regenerate them
+- Public RNA-seq accessions used for lightweight benchmark examples: `SRR31350808`-`SRR31350811`.
+- The qPCR comparison is reported as a descriptive concordance/sanity check, not as a ground-truth accuracy benchmark.
+- Exact public matrix filenames, checksums, and access locations must be recorded in `repro/manifest.tsv` when the final Zenodo/GitHub release is created.
+
+Minimum expected public-release artifacts when finalized:
+
+- input matrix description (`inputs.tsv` or equivalent)
+- benchmark command script or notebook
+- processed concordance summary table
+- figure-generation commands for Supplementary Figs. S4-S6
+- checksums for redistributable inputs and outputs

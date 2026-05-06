@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """
-bigWig2Expression.py: Calculate CPM and TPM values for genes from BigWig files.
+bigWig2Expression.py: Calculate BigWig signal-per-million and TPM-like summaries.
 
-This script computes both CPM (Counts Per Million) and TPM (Transcripts Per Million)
-for genes using strand-specific or unstranded BigWig coverage files. It uses an
-exon-based model that merges overlapping exons to create non-redundant gene
-representations, similar to featureCounts.
+This script computes CPM-labelled Signal Per Million (SPM) and TPM-like summaries
+for genes or BED-defined regions using strand-specific or unstranded BigWig
+coverage files. It uses an exon-based model that merges overlapping exons to
+create non-redundant gene representations, similar to featureCounts. The CPM
+column names are retained for backward compatibility, but they are BigWig signal
+summaries, not fragment-count CPM and not mean per-base CPM (MCPM).
 
 IMPORTANT NOTES ON NORMALIZATION:
     - CPM: Signal Per Million (SPM) - normalized by total signal, NOT fragment count
@@ -14,7 +16,7 @@ IMPORTANT NOTES ON NORMALIZATION:
     - TPM: All TPM values (unstranded, forward, reverse) use the SAME denominator
       (total_spk_unstranded) to ensure comparability.
 
-Output Format (7 columns, similar to STAR ReadsPerGene.out.tab):
+Output Format (7 columns; CPM-labelled columns are BigWig signal-per-million):
     1. gene_id: Gene identifier
     2. unstranded_CPM: CPM from both strands combined
     3. forward_CPM: CPM from forward strand (F1R2 for + genes, F2R1 for - genes)
@@ -95,13 +97,15 @@ def parse_arguments() -> argparse.Namespace:
         Parsed arguments
     """
     parser = argparse.ArgumentParser(
-        description=f'bigWig2Expression v{__version__}: Calculate CPM and TPM from BigWig files',
+        description=f'bigWig2Expression v{__version__}: Calculate CPM-labelled signal-per-million and TPM summaries from BigWig files',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 DESCRIPTION:
-  This tool calculates both CPM and TPM values from BigWig coverage files,
-  similar to STAR's ReadsPerGene.out.tab output format. It uses merged exons
-  to avoid double-counting overlapping regions.
+  This tool calculates CPM-labelled Signal Per Million (SPM) and TPM-like
+  summaries from BigWig coverage files. The output keeps *_CPM column names for
+  compatibility with existing EVscope outputs, but these values are normalized
+  BigWig signal summaries, not fragment-count CPM and not mean per-base CPM
+  (MCPM). It uses merged exons to avoid double-counting overlapping regions.
 
 INPUT FILE FORMATS:
 
@@ -140,6 +144,7 @@ INPUT FILE FORMATS:
 
 OUTPUT FORMAT (7 columns):
   gene_id  unstranded_CPM  forward_CPM  reverse_CPM  unstranded_TPM  forward_TPM  reverse_TPM
+  Note: *_CPM columns are CPM-labelled BigWig Signal Per Million summaries.
 
 STRAND CONVENTIONS:
   - forward library: F1R2 (Read2) matches RNA strand
@@ -154,7 +159,8 @@ STRAND CONVENTIONS:
     - reverse_CPM/TPM: from F1R2
 
 NORMALIZATION NOTES:
-  - CPM is actually "Signal Per Million" (total signal, not fragment count)
+  - CPM-labelled outputs are actually "Signal Per Million" (total BigWig signal,
+    not fragment counts and not mean per-base CPM/MCPM)
   - All TPM values use the same denominator for comparability
   - For unstranded data, forward/reverse CPM/TPM are set to 0
 

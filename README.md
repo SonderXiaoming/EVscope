@@ -1,6 +1,6 @@
 # EVscope: A Modular Pipeline for EV-Enriched Total RNA-seq QC, EM-Weighted Coverage Profiling, and RNA-Biotype Annotation
 
-**EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV)-enriched total RNA sequencing data. Tailored to EV RNA-seq challenges—low RNA yield, fragmented inserts, diverse RNA biotypes, high multi-mapping, and contamination risk—EVscope processes paired-end or single-end FASTQ files through an end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression matrix generation, contamination screening, exploratory source-enrichment analysis, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces EMapper, an expectation-maximization (EM) module whose primary novelty is EM-weighted genome-coordinate BigWig/coverage generation with RNA annotation support; gene-level count concordance with featureCounts/RSEM is used as a sanity check, not as a claim that EMapper is superior to RSEM for conventional gene readcount quantification.
+**EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV)-enriched total RNA sequencing data. Tailored to EV RNA-seq challenges—low RNA yield, fragmented inserts, diverse RNA biotypes, high multi-mapping, and contamination risk—EVscope processes paired-end or single-end FASTQ files through an end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression matrix generation, contamination screening, exploratory source-enrichment analysis, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces EMapper, an expectation-maximization (EM) module whose main EMapper-specific contribution in EVscope is EM-weighted genome-coordinate BigWig/coverage generation with RNA annotation support; gene-level count concordance with featureCounts/RSEM is used as a sanity check, not as a claim that EMapper is superior to RSEM for conventional gene readcount quantification.
 
 <p align="center">
   <img src="./figures/EVscope_pipeline.png" alt="EVscope Pipeline Overview" width="600"/>
@@ -174,7 +174,7 @@ bash EVscope.sh --sample_name <name> --input_fastqs <files> [options]
 
 **Required Arguments**:
 - `--sample_name <name>`: Unique sample identifier (used for output files).
-- `--input_fastqs <files>`: Comma-separated FASTQ file paths (e.g., `R1.fq.gz,R2.fq.gz` for paired-end).
+- `--input_fastqs <files>`: Space-separated FASTQ file paths: one file for single-end input or two files for paired-end input (e.g., `R1.fq.gz R2.fq.gz`).
 
 **Optional Arguments**:
 | Option | Description | Default |
@@ -184,7 +184,7 @@ bash EVscope.sh --sample_name <name> --input_fastqs <files> [options]
 | `--skip_steps <list>` | Steps to skip (e.g., `2,4`) | None |
 | `--circ_tool <tool>` | circRNA detection tool (`CIRCexplorer2`, `CIRI2`, `both`) | `both` |
 | `--gDNA_correction <yes\|no>` | Apply genomic DNA correction | `no` |
-| `--strandedness <strand>` | Library strandedness (`forward`, `reverse`, `unstrand`) | `reverse` |
+| `--strand <strand>` | Library strandedness (`forward`, `reverse`, `unstrand`) | `unstrand` |
 | `--config <path>` | Custom configuration file | `EVscope.conf` |
 | `-V, --verbosity <level>` | Logging level (1=DEBUG, 2=INFO, 3=WARN, 4=ERROR) | 2 |
 | `-h, --help` | Display help message | - |
@@ -193,11 +193,11 @@ bash EVscope.sh --sample_name <name> --input_fastqs <files> [options]
 ### Example: Full Pipeline
 ```bash
 bash EVscope.sh --sample_name Example_Data \
-    --input_fastqs R1.fq.gz,R2.fq.gz \
+    --input_fastqs R1.fq.gz R2.fq.gz \
     --threads 20 \
     --run_steps all \
     --gDNA_correction yes \
-    --strandedness reverse \
+    --strand reverse \
     --verbosity 2
 ```
 
@@ -252,7 +252,7 @@ Each sample generates an output directory with the following structure:
 ├── Step_07_Strand_Detection/          # Strandedness and splice/kb metrics
 ├── Step_08_CIRCexplorer2/             # CIRCexplorer2 circRNA results
 ├── Step_09_CIRI2/                     # CIRI2 circRNA results
-├── Step_10_circRNA_Merged/            # Merged circRNA results (CPM-normalized)
+├── Step_10_circRNA_Merge/             # Merged circRNA results (CPM-normalized)
 ├── Step_11_RNA_Metrics/               # Picard RNA-seq metrics
 ├── Step_12_featureCounts_Quant/       # featureCounts gene quantification
 ├── Step_13_gDNA_Corrected/            # gDNA-corrected quantification
