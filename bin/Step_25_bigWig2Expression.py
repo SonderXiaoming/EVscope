@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 bigWig2Expression.py: Calculate CPM and TPM values for genes from BigWig files.
 

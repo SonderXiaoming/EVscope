@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Generate RNA composition barplots split by Norm_Expr and ReadCounts filters"""
 
 import argparse

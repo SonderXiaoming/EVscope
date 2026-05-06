@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Usage: python 04_convert_CIRI2CPM.py --CIRI2_result <CIRI2_result.tsv> --input_sam <UMI_dedup.sorted.sam> --output <CIRI2_dedup_out.tsv> --GeneID_meta_table <geneID_meta_table.tsv>
 

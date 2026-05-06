@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Generate RNA composition plot from merged matrix, split into two subplots (Norm_Expr vs ReadCounts)."""
 
 import argparse

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Usage: python 03_convert_CIRCexplorer2CPM.py --CIRCexplorer2_result <result.txt> --input_bam <dedup.bam> --output <out.tsv> --GeneID_meta_table <meta_table.tsv>
 

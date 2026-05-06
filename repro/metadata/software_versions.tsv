@@ -1,0 +1,10 @@
+tool	version_source	expected_version	notes
+EVscope	git tag	TBD	Set at release time.
+Python	environments/evscope_env.yml	3.10	Core scripts.
+FastQC	environments/evscope_env.yml	0.12.1	QC.
+STAR	environments/evscope_env.yml	2.7.11b	Alignment.
+samtools	environments/evscope_env.yml	1.21	BAM operations.
+featureCounts	environments/evscope_env.yml	2.0.6	Quantification.
+CIRCexplorer2	environments/evscope_env.yml	2.3.8	circRNA.
+CIRI2	soft/CIRI_v2.0.6	2.0.6	Bundled/external tool path configured in EVscope.conf.
+RSEM	soft/RSEM_v1.3.3	1.3.3	Bundled/external tool path configured in EVscope.conf.

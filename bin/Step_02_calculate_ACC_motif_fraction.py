@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Calculate the fraction of reads in a FASTQ file with the ACC motif at specified positions.
 Usage: python Step_02_calculate_ACC_motif_fraction.py --input_fastq <fastq_file> --positions <start-end> [--output_tsv <tsv_file>]

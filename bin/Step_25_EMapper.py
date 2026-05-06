@@ -1,15 +1,23 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
-EMapper.py: EMapper: High-performance EM-based RNA-seq quantification tool.
+EMapper.py: EM-weighted BigWig/coverage generation and annotated RNA-seq summaries.
 ===============================================================================
-This script provides robust, memory-safe quantification of RNA-seq data from
-BAM files using a two-round Expectation-Maximization (EM) algorithm:
+This script provides robust, memory-safe genome-coordinate coverage profiling and
+RNA-seq summary quantification from BAM files using a two-round
+Expectation-Maximization (EM) algorithm:
   Round 1 (Positional EM): Resolves positional ambiguity for multi-mapping reads
                            by weighting positions based on coverage evidence.
   Round 2 (Gene EM): Resolves gene-level ambiguity for reads overlapping multiple
                      genes using abundance-based probability weights.
 Key Features:
+  - EM-weighted genome-coordinate BigWig tracks at single-base or binned resolution
+  - Strand-aware coverage outputs and optional unique/multi diagnostic BigWigs
   - Splice junction detection from CIGAR N operations and GTF annotations
   - Polyadenylation site (PAS) detection with strict strand orientation
+  - Gene-level summaries for downstream inspection; not intended to claim
+    superiority over transcript quantifiers such as RSEM for conventional
+    gene readcount estimation
 RPM Normalization:
   - Denominator = total mapped templates (all read groups in BAM)
   - Provides consistent library-size normalization across samples
@@ -1398,18 +1406,21 @@ def parse_arguments() -> argparse.Namespace:
     default_threads = 10
     description_text = f"""
 ================================================================================
-EMapper v{__version__}: High-Performance EM-based RNA-seq Quantification Tool
+EMapper v{__version__}: EM-Weighted BigWig/Coverage and RNA Annotation Tool
 ================================================================================
-A robust, memory-safe quantification tool for RNA-seq data that uses a two-round
-Expectation-Maximization (EM) algorithm to resolve multi-mapping reads and
-gene-level ambiguity.
+A robust, memory-safe tool for EM-weighted genome-coordinate coverage profiling
+and RNA-seq summary quantification. EMapper resolves multi-mapping reads and
+gene-level ambiguity while generating BigWig tracks for genome-browser and
+annotation-aware downstream analyses.
 
 Key Features:
   - Two-round EM: Positional EM for multi-mappers, Gene EM for overlapping genes
   - Splice junction detection from CIGAR and GTF annotations
   - Poly(A) site detection with internal priming filtering
   - Strand-specific quantification support (forward/reverse/unstranded)
-  - BigWig coverage track generation with RPM normalization
+  - EM-weighted BigWig coverage track generation with RPM normalization
+  - Gene-level summaries intended for concordance checks and annotation-aware review,
+    not as a superiority claim over RSEM for conventional gene readcounts
 
 Output Files:
   - *_readcounts.txt: Gene-level count matrix with TPM values

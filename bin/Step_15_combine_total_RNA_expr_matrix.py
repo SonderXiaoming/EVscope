@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Merge RNA and circRNA expression data with full columns"""
 import argparse
 import csv

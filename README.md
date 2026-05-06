@@ -1,6 +1,6 @@
-# EVscope: A Comprehensive Bioinformatics Pipeline for Accurate and Robust Total RNA Sequencing Analysis of Extracellular Vesicles
+# EVscope: A Modular Pipeline for EV-Enriched Total RNA-seq QC, EM-Weighted Coverage Profiling, and RNA-Biotype Annotation
 
-**EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV) RNA sequencing data. Tailored to address the challenges of EV RNA-seq—low RNA yield, fragmented transcripts, diverse RNA biotypes, and contamination—EVscope processes paired-end or single-end FASTQ files through a robust, end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression quantification, contamination screening, tissue deconvolution, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces a novel expectation-maximization (EM) algorithm for multi-mapping read assignment and a unique read-through detection method for Read1 trimming.
+**EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV)-enriched total RNA sequencing data. Tailored to EV RNA-seq challenges—low RNA yield, fragmented inserts, diverse RNA biotypes, high multi-mapping, and contamination risk—EVscope processes paired-end or single-end FASTQ files through an end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression matrix generation, contamination screening, exploratory source-enrichment analysis, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces EMapper, an expectation-maximization (EM) module whose primary novelty is EM-weighted genome-coordinate BigWig/coverage generation with RNA annotation support; gene-level count concordance with featureCounts/RSEM is used as a sanity check, not as a claim that EMapper is superior to RSEM for conventional gene readcount quantification.
 
 <p align="center">
   <img src="./figures/EVscope_pipeline.png" alt="EVscope Pipeline Overview" width="600"/>
@@ -30,7 +30,7 @@
 ## Key Features
 
 - **Novel Read-Through Detection**: Trims UMI-derived adapter sequences from Read1 using reverse-complemented Read2 UMIs (`bin/Step_03_UMIAdapterTrimR1.py`).
-- **EM-Based Multi-Mapping Resolution**: Assigns multi-mapped reads at single-base resolution using a genome-wide expectation-maximization algorithm (`bin/Step_25_EMapper.py`).
+- **EM-Weighted BigWig Coverage Profiling**: Uses a genome-wide expectation-maximization algorithm to assign multi-mapped fragments at single-base or binned resolution and generate strand-aware, RPM-normalized BigWig tracks (`bin/Step_25_EMapper.py`).
 - **Comprehensive RNA Annotation**: Supports 3,659,642 RNAs across 20 biotypes (e.g., protein-coding, lncRNAs, miRNAs, piRNAs, retrotransposons) from GENCODE v45, piRBase v3.0, and RepeatMasker.
 - **Dual circRNA Detection**: Integrates CIRCexplorer2 and CIRI2 for robust circular RNA identification, with merged results for enhanced sensitivity (`bin/Step_10_circRNA_merge.py`).
 - **Tissue Deconvolution**: Infers EV RNA cellular origins using GTEx v10 and Human Brain Cell Atlas v1.0 references (`bin/Step_22_run_RNA_deconvolution_ARIC.py`).
@@ -44,7 +44,7 @@
 
 Extracellular vesicles (EVs) are critical mediators of intercellular communication, carrying diverse RNAs that serve as potential biomarkers for diseases like cancer and neurodegeneration. However, EV RNA sequencing faces unique challenges: low RNA abundance, fragmented transcripts, contamination from genomic DNA or bacterial RNA, and the presence of non-polyadenylated RNAs (e.g., miRNAs, lncRNAs). Standard RNA-seq pipelines, designed for cellular RNA, often fail to address these issues, leading to unreliable results due to multi-mapping reads, incomplete RNA annotations, or unfiltered contaminants.
 
-EVscope provides a specialized, end-to-end pipeline optimized for EV total RNA-seq. By integrating innovative algorithms, comprehensive RNA annotations, and robust quality control, EVscope delivers accurate, reproducible results, enabling biomarker discovery and advancing EV research.
+EVscope provides a specialized, end-to-end pipeline optimized for EV-enriched total RNA-seq. Its distinctive contribution is not to replace transcript quantifiers such as RSEM for ordinary gene readcount estimation, but to connect EV-oriented QC, broad RNA annotation, EM-weighted genome-coordinate BigWig tracks, RNA-biotype/meta-gene coverage profiling, and report generation in one reproducible workflow.
 
 ## Directory Structure
 
@@ -154,6 +154,16 @@ EVscope/
    samtools --version
    python --version
    ```
+
+## Smoke Test
+
+A lightweight repository smoke test is available under `tests/smoke/`. It validates script syntax and selected toy-data transformations without requiring the full human reference bundle.
+
+```bash
+bash tests/smoke/run_smoke.sh
+```
+
+For a full end-to-end run, download the Zenodo reference bundle and use the SRA example listed in Data Availability.
 
 ## Usage
 
@@ -312,14 +322,14 @@ If you use EVscope in your research, please cite:
 4. Department of Medicine, Brigham and Women's Hospital, Harvard Medical School, Harvard University, Boston, MA, USA
 
 **Data Availability**:
-Source code: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope) and Zenodo (https://doi.org/10.5281/zenodo.15577788) under MIT license.
+Source code: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope) and Zenodo (https://doi.org/10.5281/zenodo.15577788), licensed under the MIT License.
 Raw sequencing data: NCBI SRA (accession: SRR31350808–SRR31350811).
 
 **Corresponding Author**: Xianjun Dong ([xianjun.dong@yale.edu](mailto:xianjun.dong@yale.edu))
 
 ## License
 
-EVscope is licensed under the [MIT License](LICENSE).
+EVscope source code is licensed under the [MIT License](LICENSE).
 
 ## Contact
 

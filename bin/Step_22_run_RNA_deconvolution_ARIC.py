@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: MIT
 """
 # Usage example:
 #   python Step_22_run_RNA_deconvolution_ARIC.py \

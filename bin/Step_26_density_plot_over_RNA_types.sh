@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
 # Script to generate density plots over RNA types from a bigWig file and BED files.
 
 # Function to display usage

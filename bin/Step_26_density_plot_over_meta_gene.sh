@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
 # Script to generate stacked profile plots over meta-gene regions from a bigWig file and BED files.
 # The Y-axis scale is fixed (--yMin 0 --yMax 5) for consistent scaling across samples.
 # Outputs PNG and SVG plots as ${output_prefix}_bed_stacked_profile_meta_gene.png/.svg.

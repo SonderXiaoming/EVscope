@@ -1,0 +1,5 @@
+artifact_id	role	path_or_accession	external_url_or_doi	sha256	size_bytes	license	notes
+source_code	code	.	https://github.com/TheDongLab/EVscope	TBD	TBD	MIT	Git tag should match release DOI.
+zenodo_references	reference_bundle	references/annotations_HG38	https://doi.org/10.5281/zenodo.15577788	TBD	TBD	TBD	Download externally; do not commit large reference files.
+sra_example_raw	sequencing_data	SRR31350808-SRR31350811	NCBI SRA	NA	NA	SRA terms	Example total RNA-seq data listed in README.
+smoke_toy_fastq	test_data	tests/smoke/data/toy_R2.fastq.gz	NA	TBD	TBD	MIT	Tiny synthetic test data for CI.

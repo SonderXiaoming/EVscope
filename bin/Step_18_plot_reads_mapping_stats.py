@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Step 18: Compute read counts per genomic region from featureCounts TSV files.
 Outputs:

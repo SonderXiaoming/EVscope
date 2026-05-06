@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Infer strand specificity from a BAM file, generate a TSV summary,
 and produce a pie chart.

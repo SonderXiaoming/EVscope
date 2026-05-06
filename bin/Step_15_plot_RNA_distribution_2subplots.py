@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Optimized version with improved layout:
  - Splits filters into two groups (Norm_Expr and ReadCounts) each with 5 thresholds.

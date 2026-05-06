@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: MIT
 # Example usage:
 #     python get_umi_seq_motif_for_individual_fq.py -head SAMPLE_NAME -fq /path/to/read2.fastq.gz -n 14 -r 1000000 -o /path/to/motif_output
 #     -n: Number of bases to extract from each read.
