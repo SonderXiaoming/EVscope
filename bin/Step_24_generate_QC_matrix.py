@@ -114,19 +114,31 @@ def compute_average_read_length(fastq_file):
     return total_bases / read_count if read_count > 0 else 0
 
 def parse_bam2strand(strand_file):
-    with open(strand_file) as f:
-        _ = f.readline()
-        fields = f.readline().strip().split("\t")
-    forward_pct = float(fields[2]) * 100
-    reverse_pct = float(fields[3]) * 100
-    failed_pct  = float(fields[4]) * 100
-    # splice/kb column added in updated Step_07 (index 5)
-    splice_per_kb = fields[5].strip() if len(fields) > 5 else "NA"
-    try:
-        splice_per_kb = float(splice_per_kb)
-    except (ValueError, TypeError):
+    df = pd.read_csv(strand_file, sep="\t")
+    if df.empty:
+        return 0, 0, 0, "NA", "NA"
+    row = df.iloc[0]
+
+    def get_value(column_name, fallback_index=None, default="NA"):
+        if column_name in df.columns:
+            return row[column_name]
+        if fallback_index is not None and len(row) > fallback_index:
+            return row.iloc[fallback_index]
+        return default
+
+    forward = safe_call(float, get_value("'1++,1--,2+-,2-+ (forward)'", 2, 0), default=0.0)
+    reverse = safe_call(float, get_value("'1+-,1-+,2++,2-- (reverse)'", 3, 0), default=0.0)
+    failed = safe_call(float, get_value("%reads failed to determine:", 4, 0), default=0.0)
+
+    splice_raw = get_value("Splice_per_kb", 5, "NA")
+    splice_per_kb = safe_call(float, splice_raw, default="NA")
+    if splice_per_kb != "NA" and pd.isna(splice_per_kb):
         splice_per_kb = "NA"
-    return round(forward_pct, 2), round(reverse_pct, 2), round(failed_pct, 2), splice_per_kb
+    source = str(get_value("splice_per_kb_source", None, "NA"))
+    if source in ("", "nan", "None", "NA") or pd.isna(source):
+        source = "NA"
+
+    return round(forward * 100, 2), round(reverse * 100, 2), round(failed * 100, 2), splice_per_kb, source
 
 def parse_picard_metrics(file_path):
     header, data_line = None, None
@@ -164,6 +176,7 @@ def parse_star_log(star_log_file):
     result = {
         "Number of input reads (STAR)": metrics.get("Number of input reads", "0"),
         "Average input read length (STAR)": metrics.get("Average input read length", "0"),
+        "Average mapped length (STAR)": metrics.get("Average mapped length", "0"),
         "Uniquely mapped reads number (STAR)": metrics.get("Uniquely mapped reads number", "0"),
         "Multi-mapping reads number (STAR)": int(float(metrics.get("Number of reads mapped to multiple loci", 0)) + float(metrics.get("Number of reads mapped to too many loci", 0))),
         "Number of splices from uniquely mapped reads (STAR)": metrics.get("Number of splices: Total", "0"),
@@ -263,17 +276,21 @@ def main():
     star_multi_reads = int(star_metrics.get("Multi-mapping reads number (STAR)", 0))
     perc_multi_vs_star_input = round((star_multi_reads / star_input_reads) * 100, 2) if star_input_reads > 0 else 0
     
-    (forward_strand, reverse_strand, failed_strand, splice_per_kb) = safe_call(parse_bam2strand, args.bam2strand_file, default=(0, 0, 0, "NA"))
+    (forward_strand, reverse_strand, failed_strand, splice_per_kb, splice_per_kb_source) = safe_call(
+        parse_bam2strand, args.bam2strand_file, default=(0, 0, 0, "NA", "NA")
+    )
 
     ordered_metrics.extend([
         ("Total Fragments Mapped to Human (First STAR)", int(initial_star_mapped_fragments) if initial_star_mapped_fragments > 0 else "NA"),
         ("Number of Reads after UMI-deduplication (STAR Input)", star_input_reads if star_input_reads > 0 else "NA"),
         ("Percentage of UMI-dedup Fragments", perc_reads_after_dedup if perc_reads_after_dedup > 0 else "NA"),
-        ("Average Mapped Read Length (STAR)", float(star_metrics.get("Average input read length (STAR)", 0))),
+        ("Average Input Read Length (STAR)", float(star_metrics.get("Average input read length (STAR)", 0))),
+        ("Average Mapped Length per Unique Fragment (STAR)", float(star_metrics.get("Average mapped length (STAR)", 0))),
         ("Percentage of Mapped Reads on Forward Strand", forward_strand if forward_strand > 0 else "NA"),
         ("Percentage of Mapped Reads on Reverse Strand", reverse_strand if reverse_strand > 0 else "NA"),
         ("Percentage of Mapped Reads with Failed Strand", failed_strand if failed_strand > 0 else "NA"),
-        ("Splices per Kilobase (splice/kb, DNA contamination metric)", splice_per_kb if splice_per_kb != "NA" else "NA"),
+        ("Splices per Kilobase (splice/kb, complementary gDNA-contamination QC proxy)", splice_per_kb if splice_per_kb != "NA" else "NA"),
+        ("Splice/kb source", splice_per_kb_source if splice_per_kb_source != "NA" else "NA"),
         ("Number of Uniquely Mapped Reads (STAR)", star_unique_reads if star_unique_reads > 0 else "NA"),
         ("Percentage of Uniquely Mapped Reads (vs STAR Input)", perc_unique_vs_star_input if perc_unique_vs_star_input > 0 else "NA"),
         ("Number of Multi-mapped Reads (STAR)", star_multi_reads if star_multi_reads > 0 else "NA"),

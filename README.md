@@ -207,7 +207,7 @@ bash EVscope.sh --sample_name Example_Data \
 | 4 | Quality control of trimmed FASTQs |
 | 5 | Bacterial contamination screening (E. coli, Mycoplasma) using BBSplit |
 | 6 | Two-pass STAR alignment with UMI deduplication |
-| 7 | Library strandedness detection; splice/kb DNA contamination metric (primary source: STAR Log.final.out from Step 6) |
+| 7 | Library strandedness detection; splice/kb complementary gDNA-contamination QC proxy (primary source: STAR Log.final.out from Step 6) |
 | 8 | CIRCexplorer2-based circular RNA detection |
 | 9 | CIRI2-based circular RNA detection using BWA alignments |
 | 10 | Merging of CIRCexplorer2 and CIRI2 circRNA results |
@@ -226,6 +226,8 @@ bash EVscope.sh --sample_name Example_Data \
 | 25 | Coverage analysis and bigWig generation using EMapper |
 | 26 | Coverage density plots for RNA types and meta-gene regions |
 | 27 | Final interactive HTML report generation |
+
+**splice/kb interpretation.** EVscope reports splice junction crossings per kilobase of uniquely mapped aligned sequence as a complementary genomic-DNA-contamination QC proxy. For paired-end STAR logs, the denominator uses both mates' uniquely mapped aligned bases per fragment/read-pair, not insert size: `splice/kb = Number of splices: Total x 1000 / (Uniquely mapped reads number x Average mapped length)`. In an in-house EV RNA-seq pilot using EXODUS-M isolation, miRNeasy Advanced extraction and 400 uL plasma input (N=5), the single no-DNase control had splice/kb = 0.13; the TURBO DNase pilot libraries had splice/kb values of 1.67 (0.5 U, 10 min), 0.63 (0.25 U, 10 min), 1.64 (0.5 U, 5 min), and 0.94 (0.25 U, 5 min). Values closer to the no-DNase pilot value may indicate higher residual genomic-DNA-derived contribution, whereas higher values are directionally compatible with increased spliced/transcript-derived signal after DNase treatment. These empirical values are exploratory reference guides, not universal cutoffs and not a direct DNA quantification assay.
 
 ## Output Structure
 

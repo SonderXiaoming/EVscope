@@ -830,7 +830,7 @@ if (check_step_dir("Step_07_Strand_Detection")) {
   display_image("Step_07_Strand_Detection", "bam2strandness_pie\\.png$", "Library Strandedness Distribution")
   display_datatable("Step_07_Strand_Detection", "bam2strandness\\.tsv$", "Strandedness Details")
 
-  # --- Splice/kb: DNA contamination metric ---
+  # --- Splice/kb: complementary gDNA-contamination QC proxy ---
   tsv_files <- list.files(
     file.path(absolute_output_dir, "Step_07_Strand_Detection"),
     pattern = "bam2strandness\\.tsv$", full.names = TRUE
@@ -838,19 +838,39 @@ if (check_step_dir("Step_07_Strand_Detection")) {
   if (length(tsv_files) > 0) {
     strand_df <- tryCatch(read.delim(tsv_files[1], check.names = FALSE), error = function(e) NULL)
     if (!is.null(strand_df) && "Splice_per_kb" %in% colnames(strand_df)) {
-      spkb_val <- strand_df[["Splice_per_kb"]][1]
-      cat(paste0(
-        "<div style='border-left:4px solid #2196F3; padding:10px 16px; margin:12px 0;",
-        " background:#f0f7ff; border-radius:4px;'>",
-        "<b>Splices per kilobase (splice/kb): ", spkb_val, "</b><br/>",
-        "<span style='color:#555; font-size:0.92em;'>",
-        "DNA contamination metric (splice junctions per kb of mapped sequence). ",
-        "Reference: DNase-treated ~1.67 | No DNase ~0.13 (EV RNA-seq pilot, N=2). ",
-        "Low splice/kb indicates residual gDNA contamination. ",
-        "EVscope applies gDNA correction (opposite-strand subtraction); ",
-        "splice/kb is an independent complementary QC check.",
-        "</span></div>"
-      ))
+      spkb_num <- suppressWarnings(as.numeric(strand_df[["Splice_per_kb"]][1]))
+      spkb_source <- if ("splice_per_kb_source" %in% colnames(strand_df)) {
+        as.character(strand_df[["splice_per_kb_source"]][1])
+      } else {
+        "not recorded"
+      }
+      if (is.finite(spkb_num)) {
+        cat(paste0(
+          "<div style='border-left:4px solid #2196F3; padding:10px 16px; margin:12px 0;",
+          " background:#f0f7ff; border-radius:4px;'>",
+          "<b>Splices per kilobase (splice/kb): ", format(round(spkb_num, 4), nsmall = 4), "</b>",
+          " <span style='color:#777;'>(source: ", spkb_source, ")</span><br/>",
+          "<span style='color:#555; font-size:0.92em;'>",
+          "Complementary gDNA-contamination QC proxy, calculated as splice junction crossings per kb of uniquely mapped aligned sequence. ",
+          "For paired-end STAR logs, the denominator uses both mates' uniquely mapped aligned bases per fragment/read-pair, not insert size. ",
+          "In-house EV RNA-seq pilot reference (EXODUS-M + miRNeasy Advanced, 400 uL plasma; N=5): ",
+          "single no-DNase control splice/kb = 0.13; TURBO DNase pilot libraries = 1.67 (0.5 U, 10 min), ",
+          "0.63 (0.25 U, 10 min), 1.64 (0.5 U, 5 min), and 0.94 (0.25 U, 5 min). ",
+          "Values closer to the no-DNase pilot value may indicate higher residual genomic-DNA-derived contribution, whereas higher values are directionally compatible with increased spliced/transcript-derived signal after DNase treatment. ",
+          "These empirical values are exploratory reference guides, not universal cutoffs and not a direct DNA quantification assay. ",
+          "When gDNA-corrected outputs are requested, EVscope applies opposite-strand subtraction as a heuristic sensitivity analysis; splice/kb should be interpreted together with genomic-region, repeat-element and strand-aware QC summaries.",
+          "</span></div>"
+        ))
+      } else {
+        cat(paste0(
+          "<div style='border-left:4px solid #9E9E9E; padding:10px 16px; margin:12px 0;",
+          " background:#f7f7f7; border-radius:4px;'>",
+          "<b>Splices per kilobase (splice/kb): not available</b><br/>",
+          "<span style='color:#555; font-size:0.92em;'>",
+          "splice/kb was not computed for this sample. This may occur for older Step 07 outputs or when STAR/BAM-derived splice-kb inputs are unavailable.",
+          "</span></div>"
+        ))
+      }
     }
   }
 }
