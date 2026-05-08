@@ -827,7 +827,7 @@ if (check_step_dir("Step_06_Alignment_Refined")) {
 
 ```{r step7, results='asis'}
 if (check_step_dir("Step_07_Strand_Detection")) {
-  display_image("Step_07_Strand_Detection", "bam2strandness_pie\\.png$", "Library Strandedness Distribution")
+  display_image("Step_07_Strand_Detection", "bam2strandness_pie\\.png$", "Library strandedness and splice/kb QC proxy")
   display_datatable("Step_07_Strand_Detection", "bam2strandness\\.tsv$", "Strandedness Details")
 
   # --- Splice/kb: complementary gDNA-contamination QC proxy ---

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 Infer strand specificity from a BAM file, generate a TSV summary,
 and produce a pie chart.
@@ -28,22 +29,159 @@ Reference: EVscope (https://www.biorxiv.org/content/10.1101/2025.06.24.660984v1)
 The default test read number is 100,000,000.
 """
 
+import matplotlib as mpl
+mpl.use("pdf")
 import subprocess
 import sys
 import os
 import re
 import argparse
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 # Set font properties for publication quality
-plt.rcParams["font.family"] = "Arial"
-mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams.update({
+    'pdf.fonttype': 42,
+    'ps.fonttype': 42,
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size': 5,
+    'axes.linewidth': 0.5,
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'xtick.direction': 'out',
+    'ytick.direction': 'out',
+    'xtick.major.width': 0.5,
+    'ytick.major.width': 0.5,
+    'xtick.major.size': 2,
+    'ytick.major.size': 2,
+    'lines.linewidth': 0.5,
+})
 
 # Compiled regex for splice junction detection in CIGAR
 _SPLICE_RE = re.compile(r'(\d+)N')
 # Compiled regex for aligned match/mismatch operations in CIGAR
 _MATCH_RE  = re.compile(r'(\d+)[M=X]')
+
+# Exploratory in-house DNase pilot references for the splice/kb panel.
+# These values are displayed as QC references only. They are not universal
+# thresholds and do not constitute direct genomic DNA quantification.
+NO_DNASE_SPLICE_PER_KB = 0.13
+DNASE_TREATED_SPLICE_PER_KB_VALUES = [1.67, 0.63, 1.64, 0.94]
+MEAN_DNASE_TREATED_SPLICE_PER_KB = sum(DNASE_TREATED_SPLICE_PER_KB_VALUES) / len(DNASE_TREATED_SPLICE_PER_KB_VALUES)
+
+
+def _safe_float(value):
+    """Return float(value), or None for NA/non-finite plotting inputs."""
+    try:
+        x = float(value)
+    except (TypeError, ValueError):
+        return None
+    if x != x or x in (float('inf'), float('-inf')):
+        return None
+    return x
+
+
+def clean_sample_name_from_bam_basename(base_name):
+    """Convert EVscope BAM basename to display sample name for plotting."""
+    suffixes = [
+        '_STAR_umi_dedup_Aligned.sortedByCoord.out',
+        '_Aligned.sortedByCoord.out',
+        '_Aligned.sortedByCoord_umi_dedup.out',
+    ]
+    sample_name = base_name
+    for suffix in suffixes:
+        if sample_name.endswith(suffix):
+            sample_name = sample_name[:-len(suffix)]
+            break
+    return sample_name
+
+def plot_strandness_and_splice_qc(
+    output_dir, base_name, lib_type, frac_fwd, frac_rev, frac_failed, spkb
+):
+    """Plot strandness pie chart plus a right-side splice/kb QC barplot."""
+    f_failed = float(frac_failed)
+    f_forward = float(frac_fwd)
+    f_reverse = float(frac_rev)
+
+    labels = ['Forward strand', 'Reverse strand', 'Undetermined strand']
+    sizes  = [f_forward, f_reverse, f_failed]
+    colors = ['#FF4500', '#FFA500', '#87CEEB']
+
+    fig, (ax1, ax2) = plt.subplots(
+        1, 2, figsize=(8.27, 3.0), dpi=300,
+        gridspec_kw={'width_ratios': [1.0, 1.15]}
+    )
+
+    # --- Left: original strandness pie chart ---
+    wedges, _ = ax1.pie(
+        sizes, startangle=90, colors=colors,
+        wedgeprops={'edgecolor': 'white', 'linewidth': 0.8},
+        radius=1.08, center=(0, 0)
+    )
+    ax1.axis('equal')
+    ax1.set_title('')
+
+    legend_labels = [f"{lbl} ({sz*100:.1f}%)" for lbl, sz in zip(labels, sizes)]
+    fig.legend(
+        wedges, legend_labels, loc='lower center', bbox_to_anchor=(0.255, 0.090),
+        frameon=False, prop={'size': 6.0}, ncol=1, labelspacing=0.28,
+        handlelength=1.0, handletextpad=0.38, borderaxespad=0.0
+    )
+
+    # --- Right: splice/kb QC reference barplot ---
+    sample_spkb = _safe_float(spkb)
+    display_sample_name = clean_sample_name_from_bam_basename(base_name)
+    bar_labels = [display_sample_name, 'Mean DNase pilot (N=4)', 'No-DNase pilot (N=1)']
+    bar_values = [sample_spkb if sample_spkb is not None else 0.0,
+                  MEAN_DNASE_TREATED_SPLICE_PER_KB,
+                  NO_DNASE_SPLICE_PER_KB]
+    bar_colors = ['#2171B5', '#1A9850', '#D73027']
+
+    y_pos = [0.00, 0.40, 0.80]
+    ax2.barh(
+        y_pos, bar_values, color=bar_colors, edgecolor='white',
+        linewidth=0.35, height=0.24
+    )
+    ax2.set_yticks(y_pos)
+    ax2.set_yticklabels(bar_labels, fontsize=6.6)
+    ax2.tick_params(axis='y', pad=3, length=0)
+    ax2.set_xlabel('Splice/kb', fontsize=7.2, labelpad=5)
+    ax2.set_title('')
+
+    xmax = max(1.5, max(bar_values) * 1.22)
+    dx = xmax * 0.018
+    ax2.set_xlim(0, xmax)
+    ax2.set_ylim(1.05, -0.25)  # sample at top
+    ax2.grid(axis='x', linestyle=':', linewidth=0.4, alpha=0.35)
+    ax2.set_axisbelow(True)
+
+    for y, value, label, color in zip(y_pos, bar_values, bar_labels, bar_colors):
+        if label == display_sample_name and sample_spkb is None:
+            ax2.text(dx, y, 'NA', va='center', ha='left', fontsize=6.2,
+                     color='#666666', fontweight='bold')
+        else:
+            ax2.text(value + dx, y, f'{value:.2f}', va='center', ha='left',
+                     fontsize=6.2, color=color, fontweight='bold')
+
+    ax2.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['left'].set_linewidth(0.5)
+    ax2.spines['bottom'].set_linewidth(0.5)
+
+    # Manual compact layout matching the Step 18 two-panel style.
+    ax1.set_position([0.075, 0.260, 0.355, 0.610])
+    ax2.set_position([0.610, 0.285, 0.350, 0.550])
+    fig.text(0.252, 0.930, f'Strand Specificity\n({lib_type})',
+             ha='center', va='top', fontsize=8.2)
+    fig.text(0.785, 0.930, 'splice/kb gDNA QC proxy',
+             ha='center', va='top', fontsize=8.2)
+
+    pie_pdf = os.path.join(output_dir, f"{base_name}_bam2strandness_pie.pdf")
+    pie_png = os.path.join(output_dir, f"{base_name}_bam2strandness_pie.png")
+    fig.savefig(pie_pdf, format='pdf')
+    fig.savefig(pie_png, format='png', dpi=300)
+    plt.close(fig)
+    print(f"Combined strandness + splice/kb QC chart saved as: {pie_pdf}, {pie_png}")
 
 
 def count_cigar_junctions(cigar):
@@ -195,40 +333,14 @@ def run_infer_experiment(bam_file, refgene_bed, test_read_num, output_dir, star_
     print(f"Strandness results written to {tsv_path}")
     print(f"Splice/kb = {spkb}  (n_junctions={n_junc}, n_reads={n_tot}, avg_len={avg_l}nt, source={spkb_source})")
 
-    # --- Pie chart ---
+    # --- Combined chart: strandness pie + right-side splice/kb QC barplot ---
     try:
-        f_failed  = float(frac_failed)
-        f_forward = float(frac_fwd)
-        f_reverse = float(frac_rev)
+        plot_strandness_and_splice_qc(
+            output_dir, base_name, lib_type, frac_fwd, frac_rev, frac_failed, spkb
+        )
     except ValueError:
         print("Error: Could not convert strand fractions to numbers. Skipping chart generation.")
         return
-
-    labels = ['Forward strand', 'Reverse strand', 'Undetermined strand']
-    sizes  = [f_forward, f_reverse, f_failed]
-    colors = ['#FF4500', '#FFA500', '#87CEEB']
-
-    fig, ax = plt.subplots(figsize=(5, 3), dpi=300)
-    wedges, _ = ax.pie(
-        sizes, startangle=90, colors=colors,
-        wedgeprops={'edgecolor': 'white', 'linewidth': 1}, radius=1.2
-    )
-    ax.axis('equal')
-    ax.set_title(
-        f"Percentage of strand specificity\n{lib_type}\n{base_name}\n"
-        f"Splice/kb = {spkb}",
-        fontsize=8, pad=10
-    )
-    legend_labels = [f"{lbl} ({sz*100:.1f}%)" for lbl, sz in zip(labels, sizes)]
-    ax.legend(wedges, legend_labels, loc='center left',
-              bbox_to_anchor=(0.80, 0.5), frameon=False, prop={'size': 7})
-
-    pie_pdf = os.path.join(output_dir, f"{base_name}_bam2strandness_pie.pdf")
-    pie_png = os.path.join(output_dir, f"{base_name}_bam2strandness_pie.png")
-    plt.savefig(pie_pdf, format='pdf', bbox_inches='tight')
-    plt.savefig(pie_png, format='png', bbox_inches='tight')
-    plt.close()
-    print(f"Pie chart saved as: {pie_pdf}, {pie_png}")
 
 
 def main():
