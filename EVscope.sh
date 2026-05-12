@@ -333,6 +333,36 @@ assert_file_exists() {
     fi
     return 0
 }
+assert_nonempty_file() {
+    local filepath="${1:-}"
+    local description="${2:-file}"
+    assert_file_exists "$filepath" "$description"
+    if [[ ! -s "$filepath" ]]; then
+        log 5 "FATAL" "Required ${description} is empty: ${filepath}"
+        exit 1
+    fi
+    return 0
+}
+assert_valid_gzip() {
+    local filepath="${1:-}"
+    local description="${2:-gzip file}"
+    assert_nonempty_file "$filepath" "$description"
+    if ! gzip -t "$filepath"; then
+        log 5 "FATAL" "Invalid gzip ${description}: ${filepath}"
+        exit 1
+    fi
+    return 0
+}
+assert_valid_bam() {
+    local filepath="${1:-}"
+    local description="${2:-BAM file}"
+    assert_nonempty_file "$filepath" "$description"
+    if ! samtools quickcheck "$filepath"; then
+        log 5 "FATAL" "Invalid ${description}: ${filepath}"
+        exit 1
+    fi
+    return 0
+}
 assert_dir_exists() {
     local dirpath="${1:-}"
     local description="${2:-directory}"
@@ -518,17 +548,24 @@ run_step() {
         log 5 "FATAL" "Failed to create step directory: ${step_dir}"
         exit 1
     fi
-    if [[ -f "${step_dir}/step.done" ]]; then
-        log 2 "INFO" "Step '$(basename "$step_dir")' already completed. Skipping."
-        return 0
-    fi
     local step_name
     step_name="$(basename "$step_dir")"
+    if [[ -f "${step_dir}/step.done" && ! -f "${step_dir}/step.failed" ]]; then
+        log 2 "INFO" "Step '${step_name}' already completed. Skipping."
+        return 0
+    fi
+    if [[ -f "${step_dir}/step.done" && -f "${step_dir}/step.failed" ]]; then
+        log 3 "WARN" "Step '${step_name}' has both step.done and step.failed; rerunning."
+    elif [[ -f "${step_dir}/step.failed" ]]; then
+        log 3 "WARN" "Step '${step_name}' previously failed; rerunning."
+    fi
+    rm -f "${step_dir}/step.done" "${step_dir}/step.failed"
     log 2 "INFO" "==> Running Step: ${step_name} <=="
     local start_time
     start_time="$(date +%s)"
     local log_file="${step_dir}/step.stderr.log"
     if ( set -eo pipefail; "$@" ) 2> "$log_file"; then
+        rm -f "${step_dir}/step.failed"
         touch "${step_dir}/step.done"
         local end_time duration
         end_time="$(date +%s)"
@@ -537,6 +574,8 @@ run_step() {
         return 0
     else
         local exit_status=$?
+        rm -f "${step_dir}/step.done"
+        touch "${step_dir}/step.failed"
         log 4 "ERROR" "Step FAILED: ${step_name} (exit code: ${exit_status})"
         log 4 "ERROR" "Check stderr log: ${log_file}"
         if [[ -s "$log_file" ]]; then
@@ -545,8 +584,7 @@ run_step() {
             log 4 "ERROR" "=== End of stderr ==="
         fi
         if [[ "$ignore_err" == "true" ]]; then
-            log 3 "WARN" "Ignoring error and continuing (non-critical step)"
-            touch "${step_dir}/step.done"
+            log 3 "WARN" "Ignoring error and continuing (non-critical step; step.failed retained)"
             return 0
         else
             log 5 "FATAL" "Pipeline stopped due to critical error in ${step_name}"
@@ -574,10 +612,19 @@ get_circ_expr_matrix() {
 # ==============================================================================
 _step_1_impl() {
     local step_dir="${output_dir}/Step_01_Raw_QC"
+    local expected_count=1
     if [[ "$is_paired_end" == "true" ]]; then
+        expected_count=2
         fastqc -o "$step_dir" -t "$thread_count" "$fastq_read1" "$fastq_read2"
     else
         fastqc -o "$step_dir" -t "$thread_count" "$fastq_read1"
+    fi
+    local zip_count html_count
+    zip_count="$(find "$step_dir" -maxdepth 1 -type f -name '*_fastqc.zip' -size +0c | wc -l)"
+    html_count="$(find "$step_dir" -maxdepth 1 -type f -name '*_fastqc.html' -size +0c | wc -l)"
+    if (( zip_count < expected_count || html_count < expected_count )); then
+        log 5 "FATAL" "FastQC output incomplete in ${step_dir}: expected ${expected_count} zip/html files, found zip=${zip_count}, html=${html_count}"
+        exit 1
     fi
 }
 run_step_1() {
@@ -704,6 +751,8 @@ _step_6_initial_impl() {
              --outSAMtype BAM SortedByCoordinate --chimSegmentMin 10 --chimJunctionOverhangMin 10 \
              --chimScoreMin 1 --chimOutType Junctions WithinBAM --outBAMsortingThreadN "$thread_count"
         samtools index -@ "$thread_count" "$initial_bam"
+        assert_valid_bam "$initial_bam" "initial STAR BAM"
+        assert_nonempty_file "${initial_bam}.bai" "initial STAR BAM index"
         umi_tools dedup -I "$initial_bam" -S "$dedup_bam" \
             --log="${step_dir}/${sample_name}_umi_dedup.log" --extract-umi-method=read_id --paired
         samtools index -@ "$thread_count" "$dedup_bam"
@@ -717,10 +766,18 @@ _step_6_initial_impl() {
              --outSAMtype BAM SortedByCoordinate --chimSegmentMin 10 --chimJunctionOverhangMin 10 \
              --chimScoreMin 1 --chimOutType Junctions WithinBAM --outBAMsortingThreadN "$thread_count"
         samtools index -@ "$thread_count" "$initial_bam"
+        assert_valid_bam "$initial_bam" "initial STAR BAM"
+        assert_nonempty_file "${initial_bam}.bai" "initial STAR BAM index"
         umi_tools dedup -I "$initial_bam" -S "$dedup_bam" \
             --log="${step_dir}/${sample_name}_umi_dedup.log" --extract-umi-method=read_id
         samtools index -@ "$thread_count" "$dedup_bam"
         samtools fastq -@ "$thread_count" "$dedup_bam" | gzip > "$r1_dedup"
+    fi
+    assert_valid_bam "$dedup_bam" "UMI deduplicated BAM"
+    assert_nonempty_file "${dedup_bam}.bai" "UMI deduplicated BAM index"
+    assert_valid_gzip "$r1_dedup" "R1 UMI deduplicated FASTQ"
+    if [[ "$is_paired_end" == "true" ]]; then
+        assert_valid_gzip "$r2_dedup" "R2 UMI deduplicated FASTQ"
     fi
 }
 _step_6_refined_impl() {
@@ -728,10 +785,10 @@ _step_6_refined_impl() {
     local r1_dedup="${output_dir}/Step_06_Alignment_Initial/${sample_name}_R1_umi_dedup.clean.fq.gz"
     local r2_dedup="${output_dir}/Step_06_Alignment_Initial/${sample_name}_R2_umi_dedup.clean.fq.gz"
     local final_bam="${step_dir}/${sample_name}_STAR_umi_dedup_Aligned.sortedByCoord.out.bam"
-    assert_file_exists "$r1_dedup" "R1 dedup FASTQ from Step 6 initial"
+    assert_valid_gzip "$r1_dedup" "R1 dedup FASTQ from Step 6 initial"
     mkdir -p "$step_dir"
     if [[ "$is_paired_end" == "true" ]]; then
-        assert_file_exists "$r2_dedup" "R2 dedup FASTQ from Step 6 initial"
+        assert_valid_gzip "$r2_dedup" "R2 dedup FASTQ from Step 6 initial"
         STAR --genomeDir "$STAR_INDEX" --readFilesIn "$r1_dedup" "$r2_dedup" \
              --outFileNamePrefix "${step_dir}/${sample_name}_STAR_umi_dedup_" \
              --runThreadN "$thread_count" --twopassMode Basic --runMode alignReads \
@@ -751,6 +808,9 @@ _step_6_refined_impl() {
     samtools index -@ "$thread_count" "$final_bam"
     samtools flagstat -@ "$thread_count" "$final_bam" > \
         "${step_dir}/${sample_name}_STAR_umi_dedup_Aligned.sortedByCoord.out.flagstat"
+    assert_valid_bam "$final_bam" "refined STAR BAM"
+    assert_nonempty_file "${final_bam}.bai" "refined STAR BAM index"
+    assert_nonempty_file "${step_dir}/${sample_name}_STAR_umi_dedup_Aligned.sortedByCoord.out.flagstat" "refined STAR flagstat"
 }
 _step_6_impl() {
     mkdir -p "${output_dir}/Step_06_Alignment_Initial"
@@ -807,19 +867,22 @@ _step_9_impl() {
     local bwa_sam="${step_dir}/${sample_name}_umi_dedup.bwa.sam"
     local ciri2_out="${step_dir}/${sample_name}_CIRI2_out.tsv"
     local final_out="${step_dir}/${sample_name}_CIRI2_dedup_junction_readcounts_CPM.tsv"
-    assert_file_exists "$r1_dedup" "R1 dedup FASTQ from Step 6"
+    assert_valid_gzip "$r1_dedup" "R1 dedup FASTQ from Step 6"
     trap 'rm -f "$bwa_sam"' RETURN
     if [[ "$is_paired_end" == "true" ]]; then
-        assert_file_exists "$r2_dedup" "R2 dedup FASTQ from Step 6"
+        assert_valid_gzip "$r2_dedup" "R2 dedup FASTQ from Step 6"
         bwa mem -t "$thread_count" -T 19 "${BWA_INDEX:-}" "$r1_dedup" "$r2_dedup" > "$bwa_sam"
     else
         bwa mem -t "$thread_count" -T 19 "${BWA_INDEX:-}" "$r1_dedup" > "$bwa_sam"
     fi
+    assert_nonempty_file "$bwa_sam" "BWA SAM for CIRI2"
     perl "$CIRI2_PERL_SCRIPT" -T "$thread_count" -I "$bwa_sam" \
         -O "$ciri2_out" -F "$HUMAN_GENOME_FASTA" -A "$GENCODE_V45_GTF"
+    assert_file_exists "$ciri2_out" "CIRI2 raw output"
     run_python "${EVscope_PATH}/bin/Step_09_convert_CIRI2CPM.py" \
         --CIRI2_result "$ciri2_out" --input_sam "$bwa_sam" \
         --output "$final_out" --GeneID_meta_table "$TOTAL_GENEID_META"
+    assert_nonempty_file "$final_out" "CIRI2 CPM output"
 }
 run_step_9() {
     if [[ "$circ_tool" == "CIRI2" || "$circ_tool" == "both" ]]; then
@@ -860,15 +923,22 @@ _step_11_impl() {
         reverse) picard_strand="SECOND_READ_TRANSCRIPTION_STRAND" ;;
         forward) picard_strand="FIRST_READ_TRANSCRIPTION_STRAND" ;;
     esac
-    assert_file_exists "$final_bam" "Aligned BAM from Step 6"
+    assert_valid_bam "$final_bam" "Aligned BAM from Step 6"
     conda run -n "$PICARD_ENV" picard -Xmx${JAVA_MEM} CollectRnaSeqMetrics \
         I="$final_bam" O="$picard_out" REF_FLAT="$GENCODE_V45_REFFLAT" \
         STRAND="$picard_strand" RIBOSOMAL_INTERVALS="${HUMAN_RRNA_INTERVAL:-}"
-    conda run -n "$PICARD_ENV" picard -Xmx${JAVA_MEM} CollectInsertSizeMetrics \
-        I="$final_bam" O="$insert_out" H="$insert_pdf"
-    if command -v convert &>/dev/null; then
-        conda run -n "$PICARD_ENV" convert -density 300 -background white -alpha remove \
-            "$insert_pdf" "$insert_png" || true
+    assert_nonempty_file "$picard_out" "Picard RNA-seq metrics"
+    if [[ "$is_paired_end" == "true" ]]; then
+        conda run -n "$PICARD_ENV" picard -Xmx${JAVA_MEM} CollectInsertSizeMetrics \
+            I="$final_bam" O="$insert_out" H="$insert_pdf"
+        assert_nonempty_file "$insert_out" "Picard insert-size metrics"
+        assert_nonempty_file "$insert_pdf" "Picard insert-size histogram PDF"
+        if command -v convert &>/dev/null; then
+            conda run -n "$PICARD_ENV" convert -density 300 -background white -alpha remove \
+                "$insert_pdf" "$insert_png" || true
+        fi
+    else
+        log 2 "INFO" "Skipping Picard CollectInsertSizeMetrics for single-end data"
     fi
 }
 run_step_11() {
@@ -1428,6 +1498,7 @@ _step_27_impl() {
     export EVscope_FIGURES_DIR="$abs_figures_dir"
     cd "$abs_step_dir" || exit 1
     Rscript -e "rmarkdown::render(input = '${local_rmd}', output_file = '${report_file}', output_dir = '${abs_step_dir}', intermediates_dir = '${abs_step_dir}')"
+    assert_nonempty_file "${abs_step_dir}/${report_file}" "final HTML report"
 }
 run_step_27() {
     local step_dir="${output_dir}/Step_27_HTML_Report"
@@ -1437,7 +1508,9 @@ run_step_27() {
 # SECTION: MAIN EXECUTION LOGIC
 # ==============================================================================
 main() {
-    early_log_file="$(mktemp /tmp/evscope_early_XXXXXX.log)"
+    local early_tmp_dir="${TMPDIR:-/tmp}"
+    mkdir -p "$early_tmp_dir"
+    early_log_file="$(mktemp "${early_tmp_dir%/}/evscope_early_XXXXXX.log")"
     CLEANUP_FILES+=("$early_log_file")
     check_bash_version
     config_file="${SCRIPT_DIR}/EVscope.conf"
