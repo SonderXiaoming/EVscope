@@ -1,6 +1,6 @@
 # EVscope: A Modular Pipeline for EV-Enriched Total RNA-seq QC, EM-Weighted Coverage Profiling, and RNA-Biotype Annotation
 
-**EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV)-enriched total RNA sequencing data. Tailored to EV RNA-seq challenges—low RNA yield, fragmented inserts, diverse RNA biotypes, high multi-mapping, and contamination risk—EVscope processes paired-end or single-end FASTQ files through an end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression matrix generation, contamination screening, exploratory source-enrichment analysis, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces EMapper, an expectation-maximization (EM) module whose main EMapper-specific contribution in EVscope is EM-weighted genome-coordinate BigWig/coverage generation with RNA annotation support; gene-level count concordance with featureCounts/RSEM is used as a sanity check, not as a claim that EMapper is superior to RSEM for conventional gene readcount quantification.
+**EVscope** is an open-source, modular bioinformatics pipeline designed for the analysis of extracellular vesicle (EV)-enriched total RNA sequencing data. Tailored to EV RNA-seq challenges - low RNA yield, fragmented inserts, diverse RNA biotypes, high multi-mapping, and contamination risk - EVscope processes paired-end or single-end FASTQ files through an end-to-end workflow. It includes quality control, UMI-based deduplication, two-pass STAR alignment, circular RNA detection, expression matrix generation, contamination screening, exploratory source-enrichment analysis, and comprehensive reporting. Optimized for the SMARTer Stranded Total RNA-Seq Kit v3 (Pico Input), EVscope introduces EMapper, an expectation-maximization (EM) module whose main EMapper-specific contribution in EVscope is EM-weighted genome-coordinate BigWig/coverage generation with RNA annotation support; gene-level count concordance with featureCounts/RSEM is used as a sanity check, not as a claim that EMapper is superior to RSEM for conventional gene readcount quantification.
 
 <p align="center">
   <img src="./figures/EVscope_pipeline.png" alt="EVscope Pipeline Overview" width="600"/>
@@ -333,7 +333,7 @@ If you use EVscope in your research, please cite:
 
 **Data Availability**:
 Source code: [https://github.com/TheDongLab/EVscope](https://github.com/TheDongLab/EVscope) and Zenodo (https://doi.org/10.5281/zenodo.15577788), licensed under the MIT License.
-Raw sequencing data: NCBI SRA (accession: SRR31350808–SRR31350811).
+Raw sequencing data: NCBI SRA (accession: SRR31350808-SRR31350811).
 
 **Corresponding Author**: Xianjun Dong ([xianjun.dong@yale.edu](mailto:xianjun.dong@yale.edu))
 
