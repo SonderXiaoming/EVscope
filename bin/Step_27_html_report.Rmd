@@ -872,25 +872,64 @@ display_datatable_details <- function(subdir_path, pattern, summary_title, capti
     full_dir_path <- file.path(absolute_output_dir, subdir_path)
     file_path <- list.files(full_dir_path, pattern = pattern, full.names = TRUE)
     if (length(file_path) > 0 && file.info(file_path[1])$size > 0) {
-        cat(paste0('<details class="raw-table">\n<summary>', summary_title, '</summary>\n'))
-        cat(paste0('<p>', caption, '</p>\n'))
+        cat(paste0('<details class="raw-table">
+<summary>', htmltools::htmlEscape(summary_title), '</summary>
+'))
+        cat(paste0('<p>', htmltools::htmlEscape(caption), '</p>
+'))
         tryCatch({
             df <- readr::read_tsv(file_path[1], col_types = cols(.default = "c"), progress = FALSE)
             # Keep filesystem provenance out of the user-facing HTML report.
             if ("splice_per_kb_source" %in% colnames(df)) {
               df[["splice_per_kb_source"]] <- NULL
             }
-            print(datatable(df,
-                      caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: left; font-style: italic; color: #6c757d;', paste('Total', nrow(df), 'rows from', basename(file_path[1]))),
-                      extensions = 'Buttons',
-                      options = list(pageLength = top_n, scrollX = TRUE, dom = 'Blfrtip',
-                                     buttons = c('copy', 'csv', 'excel'),
-                                     lengthMenu = list(c(10, 25, 50, -1), c('10', '25', '50', 'All'))),
-                      filter = 'none', rownames = FALSE,
-                      class = 'cell-border stripe hover'))
-        }, error = function(e) { cat(paste('<div style="padding: 0.75rem; background: #f8d7da; border-radius: 6px; color: #842029;">Could not render table: <code>', basename(file_path[1]), '</code></div>\n\n')) })
-        cat('</details>\n\n')
+            cat('<div style="overflow-x: auto; margin: 0.75rem 0 1rem 0;">
+')
+            cat(paste0(
+              '<div style="caption-side: bottom; text-align: left; font-style: italic; color: #6c757d; margin-bottom: 0.5rem;">',
+              'Total ', nrow(df), ' rows from ', htmltools::htmlEscape(basename(file_path[1])),
+              '</div>
+'
+            ))
+            cat('<table class="cell-border stripe hover" style="border-collapse: collapse; width: max-content; min-width: 100%; font-size: 0.9rem;">
+')
+            cat('<thead><tr>')
+            for (col_name in colnames(df)) {
+              cat(paste0('<th style="border: 1px solid #d9e2ec; padding: 0.35rem 0.5rem; text-align: left; white-space: nowrap; background: #eef6fb; color: #244c5a;">', htmltools::htmlEscape(col_name), '</th>'))
+            }
+            cat('</tr></thead>
+<tbody>
+')
+            if (nrow(df) > 0) {
+              for (row_idx in seq_len(nrow(df))) {
+                row_bg <- ifelse(row_idx %% 2 == 0, ' background: #f8fbfd;', '')
+                cat('<tr>')
+                for (col_idx in seq_along(df)) {
+                  cell_value <- df[[col_idx]][row_idx]
+                  if (is.na(cell_value)) cell_value <- ''
+                  cat(paste0('<td style="border: 1px solid #d9e2ec; padding: 0.35rem 0.5rem; text-align: left; white-space: nowrap;', row_bg, '">', htmltools::htmlEscape(cell_value), '</td>'))
+                }
+                cat('</tr>
+')
+              }
+            }
+            cat('</tbody></table>
+</div>
+')
+        }, error = function(e) {
+            cat(paste0(
+              '<div style="padding: 0.75rem; background: #f8d7da; border-radius: 6px; color: #842029;">',
+              'Could not render table: <code>', htmltools::htmlEscape(basename(file_path[1])), '</code>',
+              '</div>
+
+'
+            ))
+        })
+        cat('</details>
+
+')
     }
+    invisible(NULL)
 }
 
 display_csv_datatable <- function(subdir_path, pattern, caption, top_n = 10) {
