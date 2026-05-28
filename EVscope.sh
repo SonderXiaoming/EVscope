@@ -889,6 +889,8 @@ run_step() {
     fi
     if [[ -f "${step_dir}/step.done" && -f "${step_dir}/step.failed" ]]; then
         log 3 "WARN" "Step '${step_name}' has both step.done and step.failed; rerunning."
+    elif [[ -f "${step_dir}/step.failed" ]]; then
+        log 3 "WARN" "Step '${step_name}' previously failed; rerunning."
     fi
     rm -f "${step_dir}/step.done" "${step_dir}/step.failed"
     log 2 "INFO" "==> Running Step: ${step_name} <=="
@@ -896,6 +898,7 @@ run_step() {
     start_time="$(date +%s)"
     local log_file="${step_dir}/step.stderr.log"
     if ( set -eo pipefail; "$@" ) 2> "$log_file"; then
+        rm -f "${step_dir}/step.failed"
         write_step_meta "$step_dir" "$step_name" "$signature"
         touch "${step_dir}/step.done"
         local end_time duration
@@ -1268,6 +1271,8 @@ _step_11_impl() {
             run_conda run -n "$PICARD_ENV" convert -density 300 -background white -alpha remove \
                 "$insert_pdf" "$insert_png" || true
         fi
+    else
+        log 2 "INFO" "Skipping Picard CollectInsertSizeMetrics for single-end data"
     fi
 }
 run_step_11() {

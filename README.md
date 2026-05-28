@@ -60,7 +60,7 @@ EVscope/
 │   ├── Step_02_plot_fastq2UMI_motif.py         # Visualizes UMI motif distributions
 │   ├── Step_03_plot_fastq_read_length_dist.py  # Plots read length distributions
 │   ├── Step_03_UMIAdapterTrimR1.py             # Trims UMI-derived adapters
-│   ├── Step_07_bam2strand.py                   # Determines library strandedness
+│   ├── Step_07_bam2strand.py                   # Determines library strandedness and splice/kb QC
 │   ├── Step_08_convert_CIRCexplorer2CPM.py     # Normalizes CIRCexplorer2 circRNA output
 │   ├── Step_09_convert_CIRI2CPM.py             # Normalizes CIRI2 circRNA output
 │   ├── Step_10_circRNA_merge.py                # Merges circRNA results
