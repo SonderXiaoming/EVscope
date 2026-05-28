@@ -181,33 +181,209 @@ body {
 
 .download-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-  color: white;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.55);
+  color: #ffffff;
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-fast);
-  opacity: 0.9;
+  justify-content: center;
+  font-size: 0;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  backdrop-filter: blur(3px);
+  transition: opacity var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+  opacity: 0.35;
+  z-index: 3;
+}
+
+.download-btn:hover,
+.image-container:hover .download-btn,
+.download-btn:focus-visible {
+  opacity: 0.92;
 }
 
 .download-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  opacity: 1;
+  background: rgba(17, 24, 39, 0.75);
+  transform: translateY(-1px);
 }
 
 .download-btn::before {
-  content: '⬇';
+  content: '⇩';
+  font-size: 13px;
+  line-height: 1;
+}
+
+@media (hover: none) {
+  .download-btn { opacity: 0.55; }
+}
+
+/* --- Step 07 strandness QC layout --- */
+.step07-wrapper {
+  margin: 1.25rem 0 2.5rem 0;
+}
+
+.step07-intro {
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  margin: 0.25rem 0 1.25rem 0;
+}
+
+.step07-subsection-title {
+  margin: 1.4rem 0 0.9rem 0;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--primary-color);
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+
+.step07-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(440px, 1.25fr);
+  gap: 1.25rem;
+  align-items: stretch;
+  margin: 1rem 0 1.4rem 0;
+}
+
+.step07-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 1.1rem;
+  min-height: 430px;
+  display: flex;
+  flex-direction: column;
+}
+
+.step07-card-title {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 1.02rem;
+  margin-bottom: 0.75rem;
+}
+
+.step07-card .image-container {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step07-card img {
+  box-shadow: none !important;
+  border: none !important;
+  max-height: 420px;
+  object-fit: contain;
+}
+
+.step07-note {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin-top: 0.75rem;
+}
+
+.step07-splice {
+  max-width: 980px;
+  margin: 1rem auto 1.5rem auto;
+}
+
+.step07-splice .step07-card {
+  min-height: auto;
+}
+
+.step07-splice img {
+  max-height: 500px !important;
+}
+
+.step07-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.9rem;
+  margin: 0.75rem 0 1rem 0;
+}
+
+.step07-metric-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 0.85rem 1rem;
+}
+
+.step07-metric-label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.step07-metric-value {
+  color: var(--text-primary);
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin-top: 0.15rem;
+}
+
+.step07-callout,
+.qc-details,
+.raw-table {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 0.95rem 1.1rem;
+  margin: 0.9rem 0;
+}
+
+.step07-callout {
+  border-left: 4px solid #2196F3;
+  background: #f4f9ff;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+}
+
+.qc-details summary,
+.raw-table summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.qc-details p,
+.raw-table p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.raw-table .dataTables_wrapper {
+  margin-top: 1rem;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .step07-grid {
+    grid-template-columns: 1fr;
+  }
+  .step07-card {
+    min-height: auto;
+  }
+  .step07-card img,
+  .step07-splice img {
+    max-height: none !important;
+  }
 }
 
 /* Legacy img styling for backward compatibility */
@@ -563,10 +739,11 @@ knitr::opts_chunk$set(
 options(knitr.duplicate.label = 'allow', width = 300)
 
 # --- Package Management ---
-required_packages <- c("knitr", "readr", "dplyr", "DT", "tools", "stringr", "ggplot2", "plotly", "tidyr", "xfun")
-new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
-if(length(new_packages) > 0) {
-  install.packages(new_packages, repos = "https://cloud.r-project.org/")
+required_packages <- c("knitr", "rmarkdown", "readr", "dplyr", "DT", "tools", "stringr", "ggplot2", "plotly", "tidyr", "xfun", "htmltools")
+missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_packages) > 0) {
+  stop("Missing R packages required by EVscope report: ", paste(missing_packages, collapse = ", "),
+       ". Install/update environments/evscope_env.yml instead of installing packages during report rendering.")
 }
 invisible(lapply(required_packages, library, character.only = TRUE))
 
@@ -594,8 +771,28 @@ check_step_dir <- function(subdir_name) {
   return(TRUE)
 }
 
+download_button_html <- function(img_uri, img_name) {
+  paste0(
+    '<a class="download-btn" href="', img_uri, '" download="', img_name,
+    '" aria-label="Download ', img_name, '" title="Download ', img_name, '"></a>\n'
+  )
+}
+
+missing_asset_html <- function(caption, subdir_path, pattern, missing = c("warn", "na", "silent")) {
+  missing <- match.arg(missing)
+  if (missing == "silent") return(invisible(FALSE))
+  title <- if (missing == "na") "Not applicable" else "Missing asset"
+  cat(paste0(
+    '<div style="padding: 0.75rem; background: #fff8e1; border-left: 4px solid #ffb300; border-radius: 6px; color: #664d03; margin: 0.75rem 0;">',
+    '<strong>', title, ':</strong> ', caption,
+    ' <span style="color: #6c757d;">(expected <code>', pattern, '</code> in <code>', subdir_path, '</code>)</span>',
+    '</div>\n\n'
+  ))
+  invisible(FALSE)
+}
+
 # Function to embed images directly into HTML using data URI with download button
-display_image <- function(subdir_path, pattern, caption) {
+display_image <- function(subdir_path, pattern, caption, missing = "warn") {
   full_dir_path <- file.path(absolute_output_dir, subdir_path)
   img_file_path <- list.files(full_dir_path, pattern = pattern, full.names = TRUE)
   if (length(img_file_path) > 0) {
@@ -603,20 +800,45 @@ display_image <- function(subdir_path, pattern, caption) {
     img_uri <- knitr::image_uri(img_file_path[1])
     img_name <- basename(img_file_path[1])
     cat(paste0('<div class="image-container">\n'))
-    cat(paste0('<a class="download-btn" href="', img_uri, '" download="', img_name, '">Download</a>\n'))
+    cat(download_button_html(img_uri, img_name))
     cat(paste0('<img src="', img_uri, '" alt="', img_name, '">\n'))
     cat(paste0('</div>\n\n'))
+  } else {
+    missing_asset_html(caption, subdir_path, pattern, missing = missing)
   }
 }
 
+find_first_file <- function(subdir_path, pattern) {
+  full_dir_path <- file.path(absolute_output_dir, subdir_path)
+  files <- list.files(full_dir_path, pattern = pattern, full.names = TRUE)
+  if (length(files) > 0 && file.info(files[1])$size > 0) files[1] else NULL
+}
+
+image_card_html <- function(img_path, title, note = NULL) {
+  if (is.null(img_path) || !file.exists(img_path)) return(FALSE)
+  img_uri <- knitr::image_uri(img_path)
+  img_name <- basename(img_path)
+  cat(paste0('<div class="step07-card">\n'))
+  cat(paste0('<div class="step07-card-title">', title, '</div>\n'))
+  cat(paste0('<div class="image-container">\n'))
+  cat(download_button_html(img_uri, img_name))
+  cat(paste0('<img src="', img_uri, '" alt="', title, '">\n'))
+  cat(paste0('</div>\n'))
+  if (!is.null(note)) cat(paste0('<div class="step07-note">', note, '</div>\n'))
+  cat(paste0('</div>\n'))
+  TRUE
+}
+
 # Function to embed HTML content (e.g., FastQC) into iframe
-display_iframe <- function(subdir_path, pattern, caption) {
+display_iframe <- function(subdir_path, pattern, caption, missing = "warn") {
   full_dir_path <- file.path(absolute_output_dir, subdir_path)
   html_file_path <- list.files(full_dir_path, pattern = pattern, full.names = TRUE)
   if (length(html_file_path) > 0) {
     cat(paste0("#### ", caption, " {.unlisted}\n\n"))
     data_uri <- xfun::base64_uri(html_file_path[1])
     cat(paste0('<iframe src="', data_uri, '" title="', caption, '"></iframe>\n\n'))
+  } else {
+    missing_asset_html(caption, subdir_path, pattern, missing = missing)
   }
 }
 
@@ -627,6 +849,10 @@ display_datatable <- function(subdir_path, pattern, caption, top_n = 10) {
         cat(paste0("#### ", caption, " {.unlisted}\n\n"))
         tryCatch({
             df <- readr::read_tsv(file_path[1], col_types = cols(.default = "c"), progress = FALSE)
+            # Keep filesystem provenance out of the user-facing HTML report.
+            if ("splice_per_kb_source" %in% colnames(df)) {
+              df[["splice_per_kb_source"]] <- NULL
+            }
             datatable(df,
                       caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: left; font-style: italic; color: #6c757d;', paste('Total', nrow(df), 'rows from', basename(file_path[1]))),
                       extensions = 'Buttons',
@@ -636,6 +862,34 @@ display_datatable <- function(subdir_path, pattern, caption, top_n = 10) {
                       filter = 'none', rownames = FALSE,
                       class = 'cell-border stripe hover')
         }, error = function(e) { cat(paste('<div style="padding: 0.75rem; background: #f8d7da; border-radius: 6px; color: #842029;">Could not render table: <code>', basename(file_path[1]), '</code></div>\n\n')) })
+    } else {
+        missing_asset_html(caption, subdir_path, pattern)
+    }
+}
+
+
+display_datatable_details <- function(subdir_path, pattern, summary_title, caption, top_n = 10) {
+    full_dir_path <- file.path(absolute_output_dir, subdir_path)
+    file_path <- list.files(full_dir_path, pattern = pattern, full.names = TRUE)
+    if (length(file_path) > 0 && file.info(file_path[1])$size > 0) {
+        cat(paste0('<details class="raw-table">\n<summary>', summary_title, '</summary>\n'))
+        cat(paste0('<p>', caption, '</p>\n'))
+        tryCatch({
+            df <- readr::read_tsv(file_path[1], col_types = cols(.default = "c"), progress = FALSE)
+            # Keep filesystem provenance out of the user-facing HTML report.
+            if ("splice_per_kb_source" %in% colnames(df)) {
+              df[["splice_per_kb_source"]] <- NULL
+            }
+            print(datatable(df,
+                      caption = htmltools::tags$caption(style = 'caption-side: bottom; text-align: left; font-style: italic; color: #6c757d;', paste('Total', nrow(df), 'rows from', basename(file_path[1]))),
+                      extensions = 'Buttons',
+                      options = list(pageLength = top_n, scrollX = TRUE, dom = 'Blfrtip',
+                                     buttons = c('copy', 'csv', 'excel'),
+                                     lengthMenu = list(c(10, 25, 50, -1), c('10', '25', '50', 'All'))),
+                      filter = 'none', rownames = FALSE,
+                      class = 'cell-border stripe hover'))
+        }, error = function(e) { cat(paste('<div style="padding: 0.75rem; background: #f8d7da; border-radius: 6px; color: #842029;">Could not render table: <code>', basename(file_path[1]), '</code></div>\n\n')) })
+        cat('</details>\n\n')
     }
 }
 
@@ -731,7 +985,7 @@ display_all_images <- function(subdir_path, pattern, main_caption) {
       img_name <- basename(img_path)
       cat(paste0('<p style="font-size: 1rem; color: #5d6d7e; margin: 0.5rem 0 0.25rem; font-style: italic;">', img_name, '</p>\n'))
       cat(paste0('<div class="image-container">\n'))
-      cat(paste0('<a class="download-btn" href="', img_uri, '" download="', img_name, '">Download</a>\n'))
+      cat(download_button_html(img_uri, img_name))
       cat(paste0('<img src="', img_uri, '" alt="', img_name, '">\n'))
       cat(paste0('</div>\n\n'))
     }
@@ -770,8 +1024,8 @@ if (file.exists(img_path)) {
 
 ```{r step1, results='asis'}
 if (check_step_dir("Step_01_Raw_QC")) {
-  display_iframe("Step_01_Raw_QC", "_R1_001_fastqc\\.html$", "FastQC Report — Read 1")
-  display_iframe("Step_01_Raw_QC", "_R2_001_fastqc\\.html$", "FastQC Report — Read 2")
+  display_iframe("Step_01_Raw_QC", "(R1|_1).*_fastqc\\.html$", "FastQC Report — Read 1")
+  display_iframe("Step_01_Raw_QC", "(R2|_2).*_fastqc\\.html$", "FastQC Report — Read 2", missing = "na")
 }
 
 ```
@@ -801,7 +1055,7 @@ if (check_step_dir("Step_03_UMI_Adaptor_Trim")) {
 ```{r step4, results='asis'}
 if (check_step_dir("Step_04_Trimmed_QC")) {
   display_iframe("Step_04_Trimmed_QC", "_R1_clean_fastqc\\.html$", "Trimmed FastQC Report — Read 1")
-  display_iframe("Step_04_Trimmed_QC", "_R2_clean_fastqc\\.html$", "Trimmed FastQC Report — Read 2")
+  display_iframe("Step_04_Trimmed_QC", "_R2_clean_fastqc\\.html$", "Trimmed FastQC Report — Read 2", missing = "na")
 }
 
 ```
@@ -828,34 +1082,89 @@ if (check_step_dir("Step_06_Alignment_Refined")) {
 
 ```{r step7, results='asis'}
 if (check_step_dir("Step_07_Strand_Detection")) {
-  display_image("Step_07_Strand_Detection", "bam2strandness_pie\\.png$", "Library Strandedness Distribution")
-  display_datatable("Step_07_Strand_Detection", "bam2strandness\\.tsv$", "Strandedness Details")
+  cat('<section class="step07-wrapper">\n')
+  cat('<p class="step07-intro">This module evaluates library strand assignment and splice-junction evidence for strand-aware EV RNA-seq quality control.</p>\n')
 
-  # --- Splice/kb: DNA contamination metric ---
+  pie_img <- find_first_file("Step_07_Strand_Detection", "bam2strandness_pie\\.png$")
+  length_img <- find_first_file("Step_07_Strand_Detection", "read_length_stratified_strandness_lineplot\\.png$")
+  if (is.null(length_img)) {
+    length_img <- find_first_file("Step_07_Strand_Detection", "read_length_stratified_strandness_barplot\\.png$")
+  }
+  splice_img <- find_first_file("Step_07_Strand_Detection", "splice_junction_density\\.png$")
+
   tsv_files <- list.files(
     file.path(absolute_output_dir, "Step_07_Strand_Detection"),
     pattern = "bam2strandness\\.tsv$", full.names = TRUE
   )
+  strand_df <- NULL
+  spkb_num <- NA_real_
   if (length(tsv_files) > 0) {
     strand_df <- tryCatch(read.delim(tsv_files[1], check.names = FALSE), error = function(e) NULL)
     if (!is.null(strand_df) && "Splice_per_kb" %in% colnames(strand_df)) {
-      spkb_val <- strand_df[["Splice_per_kb"]][1]
-      cat(paste0(
-        "<div style='border-left:4px solid #2196F3; padding:10px 16px; margin:12px 0;",
-        " background:#f0f7ff; border-radius:4px;'>",
-        "<b>Splices per kilobase (splice/kb): ", spkb_val, "</b><br/>",
-        "<span style='color:#555; font-size:0.92em;'>",
-        "DNA contamination metric (splice junctions per kb of mapped sequence). ",
-        "Reference: DNase-treated ~1.67 | No DNase ~0.13 (EV RNA-seq pilot, N=2). ",
-        "Low splice/kb indicates residual gDNA contamination. ",
-        "EVscope applies gDNA correction (opposite-strand subtraction); ",
-        "splice/kb is an independent complementary QC check.",
-        "</span></div>"
-      ))
+      spkb_num <- suppressWarnings(as.numeric(strand_df[["Splice_per_kb"]][1]))
     }
   }
-}
 
+  cat('<div class="step07-subsection-title">Strandness overview</div>\n')
+  if (!is.null(pie_img) && !is.null(length_img)) {
+    cat('<div class="step07-grid">\n')
+    image_card_html(pie_img, "Overall strandness summary")
+    image_card_html(
+      length_img,
+      "Strand assignment by aligned query length",
+      "Points show strand assignment among eligible alignment records after applying minimum aligned-query-length cutoffs. The 0-nt point represents the result without aligned-length filtering. Paired-end mates are counted as separate alignment records."
+    )
+    cat('</div>\n\n')
+  } else {
+    display_image("Step_07_Strand_Detection", "bam2strandness_pie\\.png$", "Overall strandness summary")
+  }
+
+  cat('<div class="step07-subsection-title">Splice junction evidence</div>\n')
+  if (is.finite(spkb_num)) {
+    cat(paste0(
+      '<div class="step07-callout"><b>Splice junction density:</b> ',
+      format(round(spkb_num, 2), nsmall = 2),
+      ' SJ/kb — normalized by uniquely mapped aligned sequence.</div>\n'
+    ))
+  } else {
+    cat('<div class="step07-callout"><b>Splice junction density:</b> not available for this sample.</div>\n')
+  }
+
+  if (!is.null(splice_img)) {
+    cat('<div class="step07-splice">\n')
+    image_card_html(splice_img, "Splice junction density (SJ/kb)")
+    cat('</div>\n')
+  }
+
+  cat(paste0(
+    '<details class="qc-details"><summary>How this metric is calculated</summary>',
+    '<p>SJ/kb = total splice junction crossings per kb of uniquely mapped aligned sequence. ',
+    'A higher value indicates more splice-junction evidence per aligned sequence length. ',
+    'This is supportive evidence for spliced RNA content, not a standalone pass/fail metric.</p>',
+    '<p>For paired-end STAR logs, the denominator uses both mates\' uniquely mapped aligned bases per fragment/read-pair, not insert size. ',
+    'Pilot reference samples are contextual benchmarks rather than fixed diagnostic thresholds: ',
+    'single no-DNase control splice/kb = 0.13; TURBO DNase pilot libraries = 1.67 (0.5 U, 10 min), ',
+    '0.63 (0.25 U, 10 min), 1.64 (0.5 U, 5 min), and 0.94 (0.25 U, 5 min).</p>',
+    '</details>\n'
+  ))
+
+  cat('<div class="step07-subsection-title">Raw metrics</div>\n')
+  display_datatable_details(
+    "Step_07_Strand_Detection",
+    "bam2strandness\\.tsv$",
+    "Original strandedness table",
+    "Original Step 07 strandness output used for the overall strandness summary.",
+    top_n = 10
+  )
+  display_datatable_details(
+    "Step_07_Strand_Detection",
+    "read_length_stratified_strandness\\.tsv$",
+    "Length-threshold strandedness table",
+    "Cumulative aligned-query-length threshold details used by the line plot.",
+    top_n = 12
+  )
+  cat('</section>\n')
+}
 ```
 
 # Step 08: circRNA Detection(CIRCexplorer2)
@@ -891,7 +1200,7 @@ if (check_step_dir("Step_10_circRNA_Merge")) {
 ```{r step11, results='asis'}
 if (check_step_dir("Step_11_RNA_Metrics")) {
   plot_picard_metrics("Step_11_RNA_Metrics", "picard_metrics\\.tsv$", "Picard Aligned Base Distribution")
-  display_image("Step_11_RNA_Metrics", "insert_size_histogram\\.png$", "Insert Size Distribution")
+  display_image("Step_11_RNA_Metrics", "insert_size_histogram\\.png$", "Insert Size Distribution", missing = "na")
 }
 
 ```
@@ -920,7 +1229,7 @@ if (check_step_dir("Step_16_gDNA_Corrected_Expression")) {
 
 ```{r step17, results='asis'}
 if (check_step_dir("Step_17_RSEM_Expression")) {
-  display_datatable("Step_17_RSEM_Expression", "_combined_expression_matrix_linearRNA_TPM_circRNA_CPM\\.tsv$", "Combined Expression (RSEM)")
+  display_datatable("Step_17_RSEM_Expression", "_combined_expression_matrix_linearRNA_TPM_circRNA_CPM_RSEM\\.tsv$", "Combined Expression (RSEM)")
   display_all_images("Step_17_RSEM_Expression", "\\.png$", "RSEM-based Expression Plots")
 }
 
@@ -985,10 +1294,16 @@ if (check_step_dir("Step_24_MultiQC_Summary")) {
 
 ```{r step25, results='asis'}
 if (check_step_dir("Step_25_EMapper_BigWig_Quantification")) {
-  cat('<div style="padding: 1.5rem; background: linear-gradient(135deg, #e8f8f5 0%, #d5f5e3 100%); border-radius: 10px; border-left: 4px solid #27ae60; margin: 1rem 0;">')
-  cat('<strong style="color: #1e8449;">✓ BigWig Files Generated</strong><br/>')
-  cat('<span style="color: #5d6d7e;">Coverage track files are available in <code>Step_25_EMapper_BigWig_Quantification/EMapper_output/</code> for genome browser visualization.</span>')
-  cat('</div>\n\n')
+  step25_dir <- file.path(absolute_output_dir, "Step_25_EMapper_BigWig_Quantification", "EMapper_output")
+  bw_files <- if (dir.exists(step25_dir)) list.files(step25_dir, pattern = "\\.bw$", full.names = FALSE) else character(0)
+  if (length(bw_files) > 0) {
+    cat('<div style="padding: 1.5rem; background: linear-gradient(135deg, #e8f8f5 0%, #d5f5e3 100%); border-radius: 10px; border-left: 4px solid #27ae60; margin: 1rem 0;">')
+    cat('<strong style="color: #1e8449;">✓ BigWig Files Generated</strong><br/>')
+    cat('<span style="color: #5d6d7e;">Coverage track files are available in <code>Step_25_EMapper_BigWig_Quantification/EMapper_output/</code> for genome browser visualization.</span>')
+    cat('</div>\n\n')
+  } else {
+    missing_asset_html("BigWig coverage files", "Step_25_EMapper_BigWig_Quantification/EMapper_output", "*.bw")
+  }
 }
 
 ```

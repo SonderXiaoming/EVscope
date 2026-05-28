@@ -34,9 +34,36 @@ fi
 # Default random_tested_row_num_per_bed to 'all' if not provided
 random_tested_row_num_per_bed=${random_tested_row_num_per_bed:-all}
 
-# Convert input_bed_files and input_bed_labels from JSON-like strings to arrays
-bed_files=($(echo "$input_bed_files" | sed 's/[][]//g; s/,/ /g; s/"//g'))
-labels=($(echo "$input_bed_labels" | sed 's/[][]//g; s/,/ /g; s/"//g'))
+PYTHON_BIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+if [[ -z "$PYTHON_BIN" ]]; then
+    echo "Error: Step 26 requires python3 or python in PATH."
+    exit 1
+fi
+for required_tool in computeMatrix plotProfile; do
+    if ! command -v "$required_tool" >/dev/null 2>&1; then
+        echo "Error: Step 26 requires $required_tool in PATH."
+        exit 1
+    fi
+done
+
+# Convert JSON arrays to Bash arrays without splitting paths on spaces.
+parse_json_array() {
+    local json_input="$1"
+    "$PYTHON_BIN" - "$json_input" <<'PYJSON'
+import json
+import sys
+try:
+    values = json.loads(sys.argv[1])
+except Exception as exc:
+    raise SystemExit(f"Invalid JSON array: {exc}")
+if not isinstance(values, list):
+    raise SystemExit("Expected a JSON array")
+for value in values:
+    print(str(value))
+PYJSON
+}
+mapfile -t bed_files < <(parse_json_array "$input_bed_files")
+mapfile -t labels < <(parse_json_array "$input_bed_labels")
 
 # Validate that bed_files and labels arrays have the same length
 if [[ ${#bed_files[@]} -ne ${#labels[@]} ]]; then
@@ -115,7 +142,10 @@ for color in colors:
 print(" ".join(colors_hex))
 EOF
 )
-color_list=$(python -c "$python_code" "$num_colors")
+if ! color_list=$("$PYTHON_BIN" -c "$python_code" "$num_colors"); then
+    echo "Error: Failed to generate Step 26 colors. Ensure matplotlib and numpy are installed for $PYTHON_BIN."
+    exit 1
+fi
 IFS=' ' read -r -a colors <<< "$color_list"
 
 # Check if computeMatrix output exists

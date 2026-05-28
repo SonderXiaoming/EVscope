@@ -174,7 +174,7 @@ bash EVscope.sh --sample_name <name> --input_fastqs <files> [options]
 
 **Required Arguments**:
 - `--sample_name <name>`: Unique sample identifier (used for output files).
-- `--input_fastqs <files>`: Space-separated FASTQ file paths: one file for single-end input or two files for paired-end input (e.g., `R1.fq.gz R2.fq.gz`).
+- `--input_fastqs <files>`: FASTQ file paths: one file for single-end input or two files for paired-end input. Space-separated (`R1.fq.gz R2.fq.gz`) and comma-separated (`R1.fq.gz,R2.fq.gz`) forms are accepted; R1 must be listed before R2.
 
 **Optional Arguments**:
 | Option | Description | Default |
@@ -186,7 +186,14 @@ bash EVscope.sh --sample_name <name> --input_fastqs <files> [options]
 | `--gDNA_correction <yes\|no>` | Apply genomic DNA correction | `no` |
 | `--strand <strand>` | Library strandedness (`forward`, `reverse`, `unstrand`) | `unstrand` |
 | `--config <path>` | Custom configuration file | `EVscope.conf` |
-| `-V, --verbosity <level>` | Logging level (1=DEBUG, 2=INFO, 3=WARN, 4=ERROR) | 2 |
+| `--resume` | Resume an existing output directory only when step metadata match current inputs/config/parameters | off |
+| `--force` | Allow re-running selected steps in an existing output directory | off |
+| `--dry-run` | Validate inputs/config/dependencies and print execution plan without running steps | off |
+| `-V, --verbosity <level>` | Logging level (1=DEBUG, 2=INFO, 3=WARN, 4=ERROR, 5=FATAL) | 2 |
+
+**Resume behavior**: EVscope refuses to reuse a non-empty output directory unless `--resume` or `--force` is provided. `--resume` only skips steps whose `step.meta.json` matches the current inputs/config/parameters. Legacy output directories created before this metadata file existed may require `--force` or cleanup before rerunning.
+
+**Report R environment**: Step 27 can render through a configured Conda R environment. Set `REPORT_R_ENV` in `EVscope.conf` to a Conda R environment name (for example, `r_env_4.4.3`) and, if needed, `CONDA_EXE` to the Conda executable. The default public config leaves `REPORT_R_ENV` empty and uses `Rscript` from `PATH`.
 | `-h, --help` | Display help message | - |
 | `-v, --version` | Show pipeline version | - |
 
@@ -217,7 +224,7 @@ bash EVscope.sh --sample_name Example_Data \
 | 4 | Quality control of trimmed FASTQs |
 | 5 | Bacterial contamination screening (E. coli, Mycoplasma) using BBSplit |
 | 6 | Two-pass STAR alignment with UMI deduplication |
-| 7 | Library strandedness detection; splice/kb DNA contamination metric (primary source: STAR Log.final.out from Step 6) |
+| 7 | Library strandedness detection; splice/kb complementary gDNA-contamination QC proxy (primary source: STAR Log.final.out from Step 6) |
 | 8 | CIRCexplorer2-based circular RNA detection |
 | 9 | CIRI2-based circular RNA detection using BWA alignments |
 | 10 | Merging of CIRCexplorer2 and CIRI2 circRNA results |
@@ -237,6 +244,8 @@ bash EVscope.sh --sample_name Example_Data \
 | 26 | Coverage density plots for RNA types and meta-gene regions |
 | 27 | Final interactive HTML report generation |
 
+**splice/kb interpretation.** EVscope reports splice junction crossings per kilobase of uniquely mapped aligned sequence as a complementary genomic-DNA-contamination QC proxy. For paired-end STAR logs, the denominator uses both mates' uniquely mapped aligned bases per fragment/read-pair, not insert size: `splice/kb = Number of splices: Total x 1000 / (Uniquely mapped reads number x Average mapped length)`. In an in-house EV RNA-seq pilot using EXODUS-M isolation, miRNeasy Advanced extraction and 400 uL plasma input (N=5), the single no-DNase control had splice/kb = 0.13; the TURBO DNase pilot libraries had splice/kb values of 1.67 (0.5 U, 10 min), 0.63 (0.25 U, 10 min), 1.64 (0.5 U, 5 min), and 0.94 (0.25 U, 5 min). Values closer to the no-DNase pilot value may indicate higher residual genomic-DNA-derived contribution, whereas higher values are directionally compatible with increased spliced/transcript-derived signal after DNase treatment. These empirical values are exploratory reference guides, not universal cutoffs and not a direct DNA quantification assay.
+
 ## Output Structure
 
 Each sample generates an output directory with the following structure:
@@ -245,20 +254,21 @@ Each sample generates an output directory with the following structure:
 <sample_name>_EVscope_output/
 ├── Step_01_Raw_QC/                    # FastQC reports for raw reads
 ├── Step_02_UMI_Analysis/              # UMI motif analysis and ACC fraction
-├── Step_03_Trimming/                  # Trimmed FASTQ files
+├── Step_03_UMI_Adaptor_Trim/          # UMI extraction, adapter trimming, clean FASTQs
 ├── Step_04_Trimmed_QC/                # FastQC reports for trimmed reads
-├── Step_05_Contamination_Filter/      # BBSplit contamination screening
-├── Step_06_Alignment_Refined/         # STAR alignment and UMI-deduplicated BAM
+├── Step_05_Bacterial_Filter/          # BBSplit bacterial/mycoplasma screening
+├── Step_06_Alignment_Initial/         # Initial STAR alignment and UMI-deduplicated FASTQs
+├── Step_06_Alignment_Refined/         # Refined STAR alignment and UMI-deduplicated BAM
 ├── Step_07_Strand_Detection/          # Strandedness and splice/kb metrics
-├── Step_08_CIRCexplorer2/             # CIRCexplorer2 circRNA results
-├── Step_09_CIRI2/                     # CIRI2 circRNA results
+├── Step_08_CIRCexplorer2_circRNA/     # CIRCexplorer2 circRNA results
+├── Step_09_CIRI2_circRNA/             # CIRI2 circRNA results
 ├── Step_10_circRNA_Merge/             # Merged circRNA results (CPM-normalized)
 ├── Step_11_RNA_Metrics/               # Picard RNA-seq metrics
 ├── Step_12_featureCounts_Quant/       # featureCounts gene quantification
-├── Step_13_gDNA_Corrected/            # gDNA-corrected quantification
+├── Step_13_gDNA_Corrected_Quant/      # gDNA-corrected quantification
 ├── Step_14_RSEM_Quant/                # RSEM quantification
 ├── Step_15_featureCounts_Expression/  # Expression matrices (TPM/CPM)
-├── Step_16_gDNA_Expression/           # gDNA-corrected expression matrices
+├── Step_16_gDNA_Corrected_Expression/ # gDNA-corrected expression matrices
 ├── Step_17_RSEM_Expression/           # RSEM expression matrices
 ├── Step_18_Genomic_Regions/           # Meta-gene region mapping stats
 ├── Step_19_Taxonomy/                  # Kraken2 taxonomic classification

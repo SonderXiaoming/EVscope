@@ -22,6 +22,12 @@ dependencies:
   - r-bookdown
   - r-ggplot2
   - r-dplyr
+  - r-readr
+  - r-stringr
+  - r-plotly
+  - r-tidyr
+  - r-xfun
+  - r-htmltools
   - pandas
   - numpy
   - matplotlib

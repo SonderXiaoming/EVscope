@@ -10,13 +10,27 @@ import os
 import sys
 import argparse
 import matplotlib as mpl
-import matplotlib.pyplot as plt
+mpl.use("pdf")
 import numpy as np
 
-# Publication-quality parameters
-mpl.rcParams['font.family'] = 'Arial'
-mpl.rcParams['pdf.fonttype'] = 42
-mpl.rcParams['ps.fonttype'] = 42
+mpl.rcParams.update({
+    'pdf.fonttype': 42,
+    'ps.fonttype': 42,
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size': 5,
+    'axes.linewidth': 0.5,
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'xtick.direction': 'out',
+    'ytick.direction': 'out',
+    'xtick.major.width': 0.5,
+    'ytick.major.width': 0.5,
+    'xtick.major.size': 2,
+    'ytick.major.size': 2,
+    'lines.linewidth': 0.5,
+})
+import matplotlib.pyplot as plt
 
 
 def sum_read_counts(tsv_file):
@@ -71,17 +85,21 @@ SAF_TO_LABEL = {
 # Display order for pie chart legend (same as original)
 DISPLAY_ORDER = ["5'UTR", 'Exon', "3'UTR", 'Intron', 'Promoter', 'Downstream 2kb', 'Intergenic']
 
-# Enrichment bar chart: sorted by enrichment (high to low)
-# Colors: red/orange for high enrichment (Exon, 5'UTR), light blue for others
-ENRICH_COLORS = {
-    'Exon': '#E41A1C',
-    "5'UTR": '#FF7F00',
-    "3'UTR": '#6BAED6',
-    'Promoter': '#6BAED6',
-    'Downstream 2kb': '#6BAED6',
-    'Intron': '#6BAED6',
-    'Intergenic': '#6BAED6',
+# Display order for the sample-level enrichment barplot.
+BARPLOT_ORDER = ['Exon', "5'UTR", "3'UTR", 'Promoter', 'Downstream 2kb', 'Intron', 'Intergenic']
+
+# Original read-distribution pie-chart palette. The enrichment panel reuses the
+# same region colors so that each genomic feature has one visual identity.
+REGION_COLORS = {
+    "5'UTR": '#FF0000',        # original red
+    'Exon': '#FFA500',           # original orange
+    "3'UTR": '#00FFFF',        # original cyan
+    'Intron': '#008000',         # original green
+    'Promoter': '#800080',       # original purple
+    'Downstream 2kb': '#000080', # original dark blue
+    'Intergenic': '#F4B6C6',     # original light pink
 }
+ENRICH_COLORS = REGION_COLORS
 
 
 if __name__ == '__main__':
@@ -163,49 +181,63 @@ if __name__ == '__main__':
             f.write(f"{region}\t{rc}\t{rf:.2f}\t{gf:.2f}\t{es:.2f}\n")
     print(f"Summary table saved: {tsv_path}")
 
-    # ── Combined figure: pie (left) + enrichment bar (right) ──
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3.5), dpi=300,
-                                    gridspec_kw={'width_ratios': [1, 1.2]})
+    # ── Combined figure: original read-distribution pie (left) + enrichment panel (right) ──
+    fig, (ax1, ax2) = plt.subplots(
+        1, 2, figsize=(6.6, 3.2), dpi=300,
+        gridspec_kw={'width_ratios': [1.12, 1.0]}
+    )
 
-    # --- Left: Pie chart ---
+    # --- Left: Pie chart; keep original visual style ---
     pie_counts = [region_counts[r] for r in DISPLAY_ORDER]
     pie_sizes = [c / total_reads for c in pie_counts]
-    pie_colors = ['red', 'orange', 'cyan', 'green', 'purple', 'blue', 'pink']
+    pie_colors = [REGION_COLORS[r] for r in DISPLAY_ORDER]
 
     wedges, _ = ax1.pie(
         pie_sizes, startangle=90, colors=pie_colors,
         wedgeprops={'edgecolor': 'white', 'linewidth': 1},
-        radius=1.0, center=(0, 0))
+        radius=1.05, center=(0, 0))
     ax1.axis('equal')
-    ax1.set_title(f"Read Distribution\n({args.sampleName})", fontsize=8, pad=8)
+    ax1.set_title('')
 
     legend_labels = [f"{lbl} ({s*100:.1f}%)" for lbl, s in zip(DISPLAY_ORDER, pie_sizes)]
-    ax1.legend(wedges, legend_labels, loc='center left',
-               bbox_to_anchor=(0.85, 0.5), frameon=False, prop={'size': 5.5})
+    fig.legend(wedges, legend_labels, loc='center left', bbox_to_anchor=(0.128, 0.455),
+               frameon=False, prop={'size': 5.4}, ncol=1, labelspacing=0.32,
+               handlelength=1.0, handletextpad=0.38, borderaxespad=0.0)
 
     # --- Right: Enrichment bar chart ---
     # Sort by enrichment score (high to low)
     sorted_regions = sorted(enrichment.keys(), key=lambda r: enrichment[r], reverse=True)
     sorted_scores = [enrichment[r] for r in sorted_regions]
-    sorted_colors = [ENRICH_COLORS.get(r, '#6BAED6') for r in sorted_regions]
+    sorted_colors = [REGION_COLORS.get(r, '#999999') for r in sorted_regions]
 
-    bars = ax2.barh(range(len(sorted_regions)), sorted_scores,
-                     color=sorted_colors, edgecolor='white', height=0.6)
-    ax2.set_yticks(range(len(sorted_regions)))
-    ax2.set_yticklabels(sorted_regions, fontsize=6)
-    ax2.set_xlabel('Enrichment Score\n(observed / expected)', fontsize=7)
-    ax2.set_title('Genomic Region Enrichment', fontsize=8)
-    ax2.invert_yaxis()  # Highest at top
+    y_step = 0.33
+    bar_height = 0.20
+    y_pos = np.arange(len(sorted_regions)) * y_step
+    y_mid = (y_pos[0] + y_pos[-1]) / 2
+    xmax = max(1.5, max(sorted_scores) * 1.24)
+    dx = xmax * 0.018
+
+    bars = ax2.barh(y_pos, sorted_scores,
+                     color=sorted_colors, edgecolor='white', linewidth=0.25, height=bar_height)
+    ax2.set_yticks(y_pos)
+    ax2.set_yticklabels(sorted_regions, fontsize=5.5)
+    ax2.tick_params(axis='y', pad=2)
+    ax2.set_xlabel('Enrichment Score (fold)\nobserved / expected', fontsize=7, labelpad=4)
+    ax2.set_title('')
+    ax2.set_xlim(0, xmax)
+    # Match the enrichment panel's visual height to the pie chart diameter.
+    ax2.set_ylim(y_mid + 1.10, y_mid - 1.10)  # Highest enrichment at top
 
     # Annotate enrichment values
-    for i, (score, region) in enumerate(zip(sorted_scores, sorted_regions)):
-        ax2.text(score + 0.3, i, f'{score:.1f}', va='center', ha='left',
-                 fontsize=6, color='#2171B5', fontweight='bold')
+    for y, score, region in zip(y_pos, sorted_scores, sorted_regions):
+        ax2.text(score + dx, y, f'{score:.1f}', va='center', ha='left',
+                 fontsize=5.5, color='#2171B5', fontweight='bold')
 
     # Add dashed line at enrichment = 1.0 (expected)
     ax2.axvline(x=1.0, color='grey', linestyle='--', linewidth=0.5, alpha=0.7)
-    ax2.text(1.05, len(sorted_regions) - 0.3, 'expected', fontsize=5,
-             color='grey', alpha=0.7)
+    ax2.text(1.0, -0.035, 'expected', transform=ax2.get_xaxis_transform(),
+             rotation=-90, ha='center', va='top', fontsize=5.2,
+             color='#666666', alpha=0.9)
 
     # Clean up spines
     ax2.spines['top'].set_visible(False)
@@ -213,13 +245,20 @@ if __name__ == '__main__':
     ax2.spines['left'].set_linewidth(0.5)
     ax2.spines['bottom'].set_linewidth(0.5)
 
-    plt.tight_layout()
+    # Manual compact landscape layout: legend | pie | enrichment.
+    # Titles are figure-level text so both panels start at exactly the same height.
+    ax1.set_position([0.265, 0.205, 0.300, 0.620])
+    ax2.set_position([0.645, 0.235, 0.320, 0.560])
+    fig.text(0.415, 0.910, f'Read Distribution\n({args.sampleName})',
+             ha='center', va='top', fontsize=8)
+    fig.text(0.805, 0.910, f'Genomic Region Enrichment\n({args.sampleName})',
+             ha='center', va='top', fontsize=8)
 
     # Save
     pdf_path = os.path.join(args.output_dir, f"{args.sampleName}_reads_mapping_stats_pie.pdf")
     png_path = os.path.join(args.output_dir, f"{args.sampleName}_reads_mapping_stats_pie.png")
-    fig.savefig(pdf_path, format='pdf', bbox_inches='tight', pad_inches=0.02)
-    fig.savefig(png_path, format='png', bbox_inches='tight', pad_inches=0.02)
+    fig.savefig(pdf_path, format='pdf')
+    fig.savefig(png_path, format='png', dpi=300)
     plt.close(fig)
 
     print(f"Plot saved: {png_path} and {pdf_path}")
