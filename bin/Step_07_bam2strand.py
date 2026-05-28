@@ -569,7 +569,7 @@ def plot_length_stratified_strandness(rows, output_dir, base_name):
     fig.text(
         0.5,
         0.012,
-        'Records with aligned query length ≥ cutoff; 0 nt = no length filter.',
+        'Records with aligned query length >= cutoff; 0 nt = no length filter.',
         ha='center',
         fontsize=5.7,
         color='#555555',

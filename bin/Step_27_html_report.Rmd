@@ -216,7 +216,7 @@ body {
 }
 
 .download-btn::before {
-  content: '⇩';
+  content: 'Download';
   font-size: 13px;
   line-height: 1;
 }
@@ -671,7 +671,7 @@ iframe,
 
 /* --- Step Status Badges --- */
 .step-complete::after {
-  content: '✓';
+  content: 'OK';
   display: inline-block;
   margin-left: 0.5rem;
   color: var(--success-color);
@@ -698,7 +698,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 2. Inject toggle button
     var btn = document.createElement('button');
     btn.id = 'toc-toggle-btn';
-    btn.innerHTML = '<span>☰</span> Close Menu'; 
+    btn.innerHTML = '<span>Menu</span> Close Menu'; 
     document.body.appendChild(btn);
 
     // 3. Toggle collapse logic
@@ -706,9 +706,9 @@ document.addEventListener("DOMContentLoaded", function() {
       document.body.classList.toggle('toc-collapsed');
       
       if (document.body.classList.contains('toc-collapsed')) {
-        btn.innerHTML = '<span>❯</span> Open Menu';
+        btn.innerHTML = '<span>&gt;</span> Open Menu';
       } else {
-        btn.innerHTML = '<span>☰</span> Close Menu';
+        btn.innerHTML = '<span>Menu</span> Close Menu';
       }
     });
   }
@@ -978,7 +978,7 @@ display_all_images <- function(subdir_path, pattern, main_caption) {
   img_files <- list.files(full_dir_path, pattern = pattern, full.names = TRUE)
   
   if (length(img_files) > 0) {
-    cat(paste0('<div style="margin-top: 1.5rem;"><strong style="font-size: 1.2rem; color: #1a5276;">📈 ', main_caption, '</strong></div>\n\n'))
+    cat(paste0('<div style="margin-top: 1.5rem;"><strong style="font-size: 1.2rem; color: #1a5276;">Chart: ', main_caption, '</strong></div>\n\n'))
     
     for (img_path in img_files) {
       img_uri <- knitr::image_uri(img_path)
@@ -1013,7 +1013,7 @@ if (file.exists(img_path)) {
     cat(paste0('<p style="font-size: 0.875rem; color: #5d6d7e; margin-top: 1rem; font-style: italic;">Figure: EVscope Pipeline Architecture</p>'))
     cat(paste0('</div>\n\n'))
 } else {
-    cat('<div style="padding: 1rem; background: #e8f4fc; border-radius: 8px; text-align: center; color: #1a5276;">ℹ Pipeline diagram not available</div>\n\n')
+    cat('<div style="padding: 1rem; background: #e8f4fc; border-radius: 8px; text-align: center; color: #1a5276;">Info: Pipeline diagram not available</div>\n\n')
 }
 
 ```
@@ -1024,8 +1024,8 @@ if (file.exists(img_path)) {
 
 ```{r step1, results='asis'}
 if (check_step_dir("Step_01_Raw_QC")) {
-  display_iframe("Step_01_Raw_QC", "(R1|_1).*_fastqc\\.html$", "FastQC Report — Read 1")
-  display_iframe("Step_01_Raw_QC", "(R2|_2).*_fastqc\\.html$", "FastQC Report — Read 2", missing = "na")
+  display_iframe("Step_01_Raw_QC", "(R1|_1).*_fastqc\\.html$", "FastQC Report - Read 1")
+  display_iframe("Step_01_Raw_QC", "(R2|_2).*_fastqc\\.html$", "FastQC Report - Read 2", missing = "na")
 }
 
 ```
@@ -1054,8 +1054,8 @@ if (check_step_dir("Step_03_UMI_Adaptor_Trim")) {
 
 ```{r step4, results='asis'}
 if (check_step_dir("Step_04_Trimmed_QC")) {
-  display_iframe("Step_04_Trimmed_QC", "_R1_clean_fastqc\\.html$", "Trimmed FastQC Report — Read 1")
-  display_iframe("Step_04_Trimmed_QC", "_R2_clean_fastqc\\.html$", "Trimmed FastQC Report — Read 2", missing = "na")
+  display_iframe("Step_04_Trimmed_QC", "_R1_clean_fastqc\\.html$", "Trimmed FastQC Report - Read 1")
+  display_iframe("Step_04_Trimmed_QC", "_R2_clean_fastqc\\.html$", "Trimmed FastQC Report - Read 2", missing = "na")
 }
 
 ```
@@ -1124,7 +1124,7 @@ if (check_step_dir("Step_07_Strand_Detection")) {
     cat(paste0(
       '<div class="step07-callout"><b>Splice junction density:</b> ',
       format(round(spkb_num, 2), nsmall = 2),
-      ' SJ/kb — normalized by uniquely mapped aligned sequence.</div>\n'
+      ' SJ/kb - normalized by uniquely mapped aligned sequence.</div>\n'
     ))
   } else {
     cat('<div class="step07-callout"><b>Splice junction density:</b> not available for this sample.</div>\n')
@@ -1298,7 +1298,7 @@ if (check_step_dir("Step_25_EMapper_BigWig_Quantification")) {
   bw_files <- if (dir.exists(step25_dir)) list.files(step25_dir, pattern = "\\.bw$", full.names = FALSE) else character(0)
   if (length(bw_files) > 0) {
     cat('<div style="padding: 1.5rem; background: linear-gradient(135deg, #e8f8f5 0%, #d5f5e3 100%); border-radius: 10px; border-left: 4px solid #27ae60; margin: 1rem 0;">')
-    cat('<strong style="color: #1e8449;">✓ BigWig Files Generated</strong><br/>')
+    cat('<strong style="color: #1e8449;">OK: BigWig Files Generated</strong><br/>')
     cat('<span style="color: #5d6d7e;">Coverage track files are available in <code>Step_25_EMapper_BigWig_Quantification/EMapper_output/</code> for genome browser visualization.</span>')
     cat('</div>\n\n')
   } else {
@@ -1333,5 +1333,5 @@ sessionInfo()
 
 <div style="text-align: center; padding: 2rem; margin-top: 2rem; border-top: 1px solid #dce4ec; color: #5d6d7e; font-size: 18px;">
 <strong>EVscope Comprehensive Analysis Report</strong>
-Generated with R Markdown • Self-contained HTML document
+Generated with R Markdown - Self-contained HTML document
 </div>

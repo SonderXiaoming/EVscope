@@ -2006,7 +2006,7 @@ def main():
             mean_len, std_len, is_paired_end = estimate_fragment_length_from_bam(bam_to_process)
             if mean_len is not None and is_paired_end:
                 args.mean_frag_len = mean_len
-                logger.info(f"Auto-detected fragment length from paired-end data: {mean_len:.1f} ± {std_len:.1f} bp")
+                logger.info(f"Auto-detected fragment length from paired-end data: {mean_len:.1f} +/- {std_len:.1f} bp")
             else:
                 args.mean_frag_len = 250.0
                 logger.info(f"Single-end data or insufficient proper pairs; using default fragment length: 250.0 bp")

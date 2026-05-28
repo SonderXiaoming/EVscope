@@ -26,8 +26,8 @@ Output Format (7 columns; CPM-labelled columns are BigWig signal-per-million):
     7. reverse_TPM: TPM from reverse strand
 
 Coordinate Systems:
-    - GTF: 1-based closed intervals [start, end] → converted to 0-based internally
-    - BED: 0-based half-open intervals [start, end) → used as-is
+    - GTF: 1-based closed intervals [start, end] -> converted to 0-based internally
+    - BED: 0-based half-open intervals [start, end) -> used as-is
     - BigWig: 0-based half-open intervals [start, end)
 
 Strand Specificity:
@@ -877,7 +877,7 @@ def calculate_gene_expression(
     gene_expression = {}
 
     for gene_id, data in gene_data.items():
-        # TPM = (SPK / total_spk_unstranded) × 1,000,000
+        # TPM = (SPK / total_spk_unstranded) x 1,000,000
         # CRITICAL: All three TPM values use the SAME denominator
         if total_spk_unstranded > 0:
             tpm_unstranded = (data['spk_unstranded'] / total_spk_unstranded) * 1e6

@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # ── Sum reads per region ──
+    # Sum reads per region
     region_counts = {
         "5'UTR":          sum_read_counts(args.input_5UTR_readcounts),
         'Exon':           sum_read_counts(args.input_exon_readcounts),
@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
     read_fractions = {r: c / total_reads for r, c in region_counts.items()}
 
-    # ── Compute genome fractions (for enrichment) ──
+    # Compute genome fractions (for enrichment)
     if args.saf_file and os.path.exists(args.saf_file):
         genome_sizes, genome_fractions_raw = compute_genome_fractions(args.saf_file)
         # Map SAF keys to display labels
@@ -161,14 +161,14 @@ if __name__ == '__main__':
             'Intergenic':     0.389607,
         }
 
-    # ── Enrichment scores ──
+    # Enrichment scores
     enrichment = {}
     for region in DISPLAY_ORDER:
         obs = read_fractions.get(region, 0)
         exp = genome_fractions.get(region, 0.001)
         enrichment[region] = obs / exp
 
-    # ── Save summary TSV ──
+    # Save summary TSV
     tsv_path = os.path.join(args.output_dir,
                             f"{args.sampleName}_reads_mapping_readcounts_summary.tsv")
     with open(tsv_path, 'w') as f:
@@ -181,7 +181,7 @@ if __name__ == '__main__':
             f.write(f"{region}\t{rc}\t{rf:.2f}\t{gf:.2f}\t{es:.2f}\n")
     print(f"Summary table saved: {tsv_path}")
 
-    # ── Combined figure: original read-distribution pie (left) + enrichment panel (right) ──
+    # Combined figure: original read-distribution pie (left) + enrichment panel (right)
     fig, (ax1, ax2) = plt.subplots(
         1, 2, figsize=(6.6, 3.2), dpi=300,
         gridspec_kw={'width_ratios': [1.12, 1.0]}

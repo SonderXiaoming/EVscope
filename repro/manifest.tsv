@@ -4,11 +4,11 @@ README_md	documentation	README.md	NA	aa2012477fb241a7bf20fcb2138dd4687acee75eb0d
 LICENSE	license	LICENSE	NA	8003003ded85bbc27a43f9719d604a358993818007a6dc7a35eb45e06c749e15	1082	MIT	MIT license for EVscope source code.
 EVscope_sh	code	EVscope.sh	NA	0e3c0bb85dc8303c9cce36bece86ff406c3a61fc11f66e1f218efa921d65b0ed	100517	MIT	Main Bash entry point.
 EVscope_conf	configuration	EVscope.conf	NA	bf94ca778d2d1c0295cddcb8a451975d6b4fadbca784cabee1ee0be3b09d956b	6104	MIT	Default reference/tool path configuration; users should edit local paths.
-bin_Step_25_EMapper_py	code	bin/Step_25_EMapper.py	NA	3fd832ab98526965ae823a62fa28ef0a601c426dda188bc06263fb3d36a73d91	117074	MIT	EMapper EM-weighted BigWig/coverage and gene-summary module.
-bin_Step_25_bigWig2Expression_py	code	bin/Step_25_bigWig2Expression.py	NA	019885dc46d3b35d54fd9eac491932b72fc17b8976effde7e8003f590e2f4219	37503	MIT	BigWig signal-per-million/TPM-like annotation summary module.
+bin_Step_25_EMapper_py	code	bin/Step_25_EMapper.py	NA	d13483469a4e47a25104fd7619289ce106d0fcfc25ebb055aed5dbfcd8a52ba2	117075	MIT	EMapper EM-weighted BigWig/coverage and gene-summary module.
+bin_Step_25_bigWig2Expression_py	code	bin/Step_25_bigWig2Expression.py	NA	412b4c1d64f511918031a44896ae7be0f0929ebd25c0261d76e84d540b77ae04	37500	MIT	BigWig signal-per-million/TPM-like annotation summary module.
 bin_Step_26_density_plot_over_RNA_types_sh	code	bin/Step_26_density_plot_over_RNA_types.sh	NA	2b8bb70804ccd527e229c9016b428abf1cca0e5835d4cdd25b0c837352a1ca31	7894	MIT	RNA-type BigWig density plotting wrapper.
 bin_Step_26_density_plot_over_meta_gene_sh	code	bin/Step_26_density_plot_over_meta_gene.sh	NA	1778752d48d9da3eb8e5f6a99d6c2ecc5b941e686119edebe8835050801c7291	8516	MIT	Meta-gene BigWig density plotting wrapper.
-bin_Step_27_html_report_Rmd	code	bin/Step_27_html_report.Rmd	NA	f388ceb3811719f67884f8704184bc370679ad829a90eba5c31dcf2344f5c6bd	44067	MIT	HTML reporting template.
+bin_Step_27_html_report_Rmd	code	bin/Step_27_html_report.Rmd	NA	2919740bc39bae68cefa0c1e7079c14407115a1089690e64d77b7fad39aa32eb	44066	MIT	HTML reporting template.
 github_workflows_smoke_yml	ci	.github/workflows/smoke.yml	NA	58eb25da24ec299883e2c1b3a60a972476fe3d0c7db4aef00c50966c6dfaa09e	521	MIT	GitHub Actions smoke-test workflow.
 tests_smoke_run_smoke_sh	test	tests/smoke/run_smoke.sh	NA	2e10439cccafe7348a9c06529f79b33be14839e3c2b3a51774eb666a95d7f681	3436	MIT	Local/CI smoke test covering syntax, CLI, toy FASTQ, tiny EMapper/BigWig when dependencies are available.
 tests_smoke_data_toy_R2_fastq_gz	test_data	tests/smoke/data/toy_R2.fastq.gz	NA	4f817aa0b325b273c2e94e57e19aee0e6c0a6e200e7f679687dd0a151c3cc7ce	72	MIT	Tiny synthetic FASTQ for smoke testing.
